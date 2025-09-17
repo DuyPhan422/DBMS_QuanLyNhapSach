@@ -1,0 +1,751 @@
+IF OBJECT_ID('ThePhat', 'U') IS NOT NULL DROP TABLE ThePhat;
+IF OBJECT_ID('TraSach', 'U') IS NOT NULL DROP TABLE TraSach;
+IF OBJECT_ID('ChiTietTheMuon', 'U') IS NOT NULL DROP TABLE ChiTietTheMuon;
+IF OBJECT_ID('TheMuon', 'U') IS NOT NULL DROP TABLE TheMuon;
+IF OBJECT_ID('Kho_Sach', 'U') IS NOT NULL DROP TABLE Kho_Sach;
+IF OBJECT_ID('The_Nhap', 'U') IS NOT NULL DROP TABLE The_Nhap;
+IF OBJECT_ID('SACH', 'U') IS NOT NULL DROP TABLE SACH;
+IF OBJECT_ID('NHA_XUAT_BAN', 'U') IS NOT NULL DROP TABLE NHA_XUAT_BAN;
+IF OBJECT_ID('THE_LOAI', 'U') IS NOT NULL DROP TABLE THE_LOAI;
+IF OBJECT_ID('TAC_GIA', 'U') IS NOT NULL DROP TABLE TAC_GIA;
+IF OBJECT_ID('DocGia', 'U') IS NOT NULL DROP TABLE DocGia;
+IF OBJECT_ID('NhanVien', 'U') IS NOT NULL DROP TABLE NhanVien;
+IF OBJECT_ID('Admin', 'U') IS NOT NULL DROP TABLE [Admin];
+IF OBJECT_ID('TaiKhoan', 'U') IS NOT NULL DROP TABLE TaiKhoan;
+GO
+
+CREATE TABLE TaiKhoan(
+	MaTK INT PRIMARY KEY IDENTITY(1, 1),
+	TenDangNhap VARCHAR(50) NOT NULL UNIQUE,
+	MatKhauMaHoa VARCHAR(255) NOT NULL,
+    	VaiTro TINYINT NOT NULL CHECK (VaiTro IN (0,1)), 
+    	-- 0 = Admin, 1 = NhanVien
+    	TrangThai TINYINT NOT NULL DEFAULT 1 CHECK (TrangThai IN (0,1,2))
+    	-- 0 = KhoaVinhVien, 1 = HoatDong, 2 = TamKhoa
+);
+CREATE TABLE [Admin](
+	MaTK INT NULL REFERENCES TaiKhoan(MaTK)
+		ON DELETE SET NULL,
+	HoTen NVARCHAR(50) NOT NULL,
+	NgaySinh DATE,
+	Email VARCHAR(50) UNIQUE,
+	SoDienThoai VARCHAR(20) UNIQUE NOT NULL,
+);
+
+CREATE TABLE NhanVien(
+	IdNV INT PRIMARY KEY IDENTITY(1, 1),
+	MaNV VARCHAR(50) NULL,
+	MaTK INT NULL REFERENCES TaiKhoan(MaTK)
+		ON DELETE SET NULL,
+	HoTen NVARCHAR(50) NOT NULL,
+	NgaySinh DATE,
+	Email VARCHAR(50) UNIQUE,
+	SoDienThoai VARCHAR(20) UNIQUE NOT NULL,
+	ChucVu NVARCHAR(50) NOT NULL CHECK (ChucVu IN ('ThuThu', 'NhanVienPartTime', 'NhanVienFullTime'))
+);
+
+CREATE TABLE TAC_GIA (
+    IdTG INT PRIMARY KEY IDENTITY(1, 1),
+    MaTacGia VARCHAR(50) NULL, 
+    TenTacGia NVARCHAR(255) NOT NULL
+);
+GO
+
+CREATE TABLE THE_LOAI (
+    IdTL INT PRIMARY KEY IDENTITY(1, 1),
+    MaTheLoai VARCHAR(50) NULL,  
+    TenTheLoai NVARCHAR(255) NOT NULL
+);
+GO
+
+CREATE TABLE NHA_XUAT_BAN (
+    IdNXB INT PRIMARY KEY IDENTITY(1, 1),
+    MaNXB VARCHAR(50) NULL,  
+    TenNXB NVARCHAR(255) NOT NULL
+);
+GO
+	
+CREATE TABLE SACH (
+    IdS INT PRIMARY KEY IDENTITY(1, 1),
+    MaSach VARCHAR(50) NULL,  
+    TenSach NVARCHAR(255) NOT NULL,
+    NamXuatBan INT NOT NULL CHECK (NamXuatBan > 0),
+    GiaSach DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    AnhBia VARBINARY(MAX),
+    IdNXB INT NOT NULL REFERENCES NHA_XUAT_BAN(IdNXB) ON DELETE NO ACTION,  
+    IdTacGia INT NOT NULL REFERENCES TAC_GIA(IdTG) ON DELETE NO ACTION,  
+    IdTheLoai INT NOT NULL REFERENCES THE_LOAI(IdTL) ON DELETE NO ACTION  
+);
+GO
+
+CREATE TABLE The_Nhap (
+    IdTN INT PRIMARY KEY IDENTITY(1, 1),
+    MaTheNhap VARCHAR(50) NULL,
+	IdS INT NOT NULL REFERENCES SACH(IdS) ON DELETE NO ACTION,
+    IdNV INT NOT NULL REFERENCES NhanVien(IdNV) ON DELETE NO ACTION,
+    NgayNhap DATE NOT NULL,
+    TrangThai VARCHAR(50) NOT NULL CHECK (TrangThai IN ('DaNhap', 'ChuaNhap')),
+    GiaNhap DECIMAL(10, 2) NOT NULL DEFAULT 0.00 CHECK (GiaNhap >= 0),
+	TongTienNhap DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+	TongSoLuongNhap INT NOT NULL CHECK (TongSoLuongNhap > 0)
+);
+GO
+	
+CREATE TABLE Kho_Sach (
+    IdK INT PRIMARY KEY IDENTITY(1, 1),  
+    MaSach INT NOT NULL REFERENCES SACH(IdS) ON DELETE CASCADE,  
+    SoLuongHienTai INT NOT NULL DEFAULT 0 CHECK (SoLuongHienTai >= 0),
+    TrangThaiSach VARCHAR(50) NOT NULL DEFAULT 'HetSach' CHECK (TrangThaiSach IN ('ConSach', 'HetSach'))
+);
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertNV
+ON NhanVien
+AFTER INSERT
+AS
+BEGIN
+	UPDATE NhanVien
+	SET MaNV = 'NV' + RIGHT('0000' + CAST(i.IdNV AS varchar(4)), 4)
+	FROM NhanVien NV
+	INNER JOIN inserted i ON NV.IdNV = i.IdNV
+END;
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertTacGia
+ON TAC_GIA
+AFTER INSERT
+AS
+BEGIN
+    UPDATE TAC_GIA
+    SET MaTacGia = 'TG' + RIGHT('000' + CAST(i.IdTG AS VARCHAR(3)), 3)
+    FROM TAC_GIA TG
+    INNER JOIN inserted i ON TG.IdTG = i.IdTG;
+END;
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertTheLoai
+ON THE_LOAI
+AFTER INSERT
+AS
+BEGIN
+    UPDATE THE_LOAI
+    SET MaTheLoai = 'TL' + RIGHT('000' + CAST(i.IdTL AS VARCHAR(3)), 3)
+    FROM THE_LOAI TL
+    INNER JOIN inserted i ON TL.IdTL = i.IdTL;
+END;
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertNXB
+ON NHA_XUAT_BAN
+AFTER INSERT
+AS
+BEGIN
+    UPDATE NHA_XUAT_BAN
+    SET MaNXB = 'NXB' + RIGHT('000' + CAST(i.IdNXB AS VARCHAR(3)), 3)
+    FROM NHA_XUAT_BAN NXB
+    INNER JOIN inserted i ON NXB.IdNXB = i.IdNXB;
+END;
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertSach
+ON SACH
+AFTER INSERT
+AS
+BEGIN
+    UPDATE SACH
+    SET MaSach = 'S' + RIGHT('000' + CAST(i.IdS AS VARCHAR(3)), 3)
+    FROM SACH S
+    INNER JOIN inserted i ON S.IdS = i.IdS;
+END;
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertTheNhap
+ON The_Nhap
+AFTER INSERT
+AS
+BEGIN
+    UPDATE The_Nhap
+    SET MaTheNhap = 'TN' + RIGHT('000' + CAST(i.IdTN AS VARCHAR(3)), 3)
+    FROM The_Nhap TN
+    INNER JOIN inserted i ON TN.IdTN = i.IdTN;
+END;
+GO
+
+CREATE OR ALTER TRIGGER UpdateKhoSach
+ON The_Nhap
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @IdS INT, @SoLuongThem INT;
+
+    -- Lấy dữ liệu từ inserted, chỉ xử lý nếu TrangThai = 'DaNhap'
+    SELECT @IdS = IdS, @SoLuongThem = TongSoLuongNhap
+    FROM inserted
+    WHERE TrangThai = 'DaNhap';
+
+    -- Nếu không có bản ghi nào thỏa mãn TrangThai = 'DaNhap', thoát trigger
+    IF @IdS IS NULL
+    BEGIN
+        RETURN; -- Thoát mà không ném lỗi
+    END;
+
+    -- Kiểm tra IdS tồn tại trong bảng SACH
+    IF NOT EXISTS (SELECT 1 FROM SACH WHERE IdS = @IdS)
+    BEGIN
+        RAISERROR ('Mã sách không tồn tại trong bảng SACH', 16, 1);
+        RETURN;
+    END;
+
+    -- Kiểm tra số lượng âm
+    IF @SoLuongThem < 0 AND EXISTS (
+        SELECT 1 FROM Kho_Sach
+        WHERE MaSach = @IdS AND SoLuongHienTai + @SoLuongThem < 0
+    )
+    BEGIN
+        RAISERROR ('Số lượng thêm vào không hợp lệ: kho không đủ sách', 16, 1);
+        RETURN;
+    END;
+
+    -- Cập nhật hoặc thêm vào Kho_Sach
+    IF EXISTS (SELECT 1 FROM Kho_Sach WHERE MaSach = @IdS)
+    BEGIN
+        UPDATE Kho_Sach
+        SET SoLuongHienTai = SoLuongHienTai + @SoLuongThem,
+            TrangThaiSach = CASE WHEN SoLuongHienTai + @SoLuongThem > 0 THEN 'ConSach' ELSE 'HetSach' END
+        WHERE MaSach = @IdS;
+    END
+    ELSE IF @SoLuongThem > 0
+    BEGIN
+        INSERT INTO Kho_Sach (MaSach, SoLuongHienTai, TrangThaiSach)
+        VALUES (@IdS, @SoLuongThem, 'ConSach');
+    END;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_NhapSach
+    @MaNV VARCHAR(50),
+    @TenSach NVARCHAR(255),
+    @TenTacGia NVARCHAR(255),
+    @TenTheLoai NVARCHAR(255),
+    @TenNXB NVARCHAR(255),
+    @NamXuatBan INT,
+    @GiaNhap DECIMAL(10, 2),
+    @SoLuong INT,
+    @NgayNhap DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        -- Kiểm tra đầu vào
+        IF @NamXuatBan > YEAR(GETDATE())
+            THROW 50005, 'Năm xuất bản không được lớn hơn năm hiện tại!', 1;
+        IF @GiaNhap < 0 OR @SoLuong < 0
+            THROW 50006, 'Giá nhập hoặc số lượng không được âm!', 1;
+
+        BEGIN TRANSACTION;
+        -- Kiểm tra mã nhân viên
+        DECLARE @IdNV INT;
+        SELECT @IdNV = IdNV FROM NhanVien WHERE MaNV = @MaNV;
+        IF @IdNV IS NULL
+        BEGIN
+            THROW 50001, 'Mã nhân viên không tồn tại!', 1;
+        END;
+        -- Thêm hoặc lấy IdTacGia
+        DECLARE @IdTacGia INT;
+        IF NOT EXISTS (SELECT 1 FROM TAC_GIA WHERE TenTacGia = @TenTacGia)
+            INSERT INTO TAC_GIA (TenTacGia) VALUES (@TenTacGia);
+        SET @IdTacGia = (SELECT IdTG FROM TAC_GIA WHERE TenTacGia = @TenTacGia);
+        -- Thêm hoặc lấy IdTheLoai
+        DECLARE @IdTheLoai INT;
+        IF NOT EXISTS (SELECT 1 FROM THE_LOAI WHERE TenTheLoai = @TenTheLoai)
+            INSERT INTO THE_LOAI (TenTheLoai) VALUES (@TenTheLoai);
+        SET @IdTheLoai = (SELECT IdTL FROM THE_LOAI WHERE TenTheLoai = @TenTheLoai);
+        -- Thêm hoặc lấy IdNXB
+        DECLARE @IdNXB INT;
+        IF NOT EXISTS (SELECT 1 FROM NHA_XUAT_BAN WHERE TenNXB = @TenNXB)
+            INSERT INTO NHA_XUAT_BAN (TenNXB) VALUES (@TenNXB);
+        SET @IdNXB = (SELECT IdNXB FROM NHA_XUAT_BAN WHERE TenNXB = @TenNXB);
+        -- Thêm hoặc lấy IdS
+        DECLARE @IdS INT;
+        IF NOT EXISTS (SELECT 1 FROM SACH WHERE TenSach = @TenSach AND IdTacGia = @IdTacGia AND IdTheLoai = @IdTheLoai AND IdNXB = @IdNXB AND NamXuatBan = @NamXuatBan)
+        BEGIN
+            INSERT INTO SACH (TenSach, NamXuatBan, GiaSach, IdTacGia, IdTheLoai, IdNXB, AnhBia)
+            VALUES (@TenSach, @NamXuatBan, @GiaNhap, @IdTacGia, @IdTheLoai, @IdNXB, NULL);
+            SET @IdS = SCOPE_IDENTITY(); -- Lấy IdS vừa chèn
+        END
+        ELSE
+        BEGIN
+            SET @IdS = (SELECT IdS FROM SACH WHERE TenSach = @TenSach AND IdTacGia = @IdTacGia AND IdTheLoai = @IdTheLoai AND IdNXB = @IdNXB AND NamXuatBan = @NamXuatBan);
+        END;
+        -- Kiểm tra @IdS không null
+        IF @IdS IS NULL
+        BEGIN
+            THROW 50004, 'Không thể lấy hoặc tạo IdS cho sách!', 1;
+        END;
+        -- Thêm thẻ nhập với trạng thái ChuaNhap
+        DECLARE @TongTienNhap DECIMAL(10, 2) = @GiaNhap * @SoLuong;
+        INSERT INTO The_Nhap (IdNV, IdS, NgayNhap, TrangThai, GiaNhap, TongSoLuongNhap, TongTienNhap)
+        VALUES (@IdNV, @IdS, @NgayNhap, 'ChuaNhap', @GiaNhap, @SoLuong, @TongTienNhap);
+        -- Ghi log để kiểm tra
+        PRINT 'IdS vừa chèn: ' + CAST(@IdS AS VARCHAR(10));
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_CapNhatSach
+    @MaTheNhap VARCHAR(50),
+    @TenSach NVARCHAR(255),
+    @TenTacGia NVARCHAR(255),
+    @TenTheLoai NVARCHAR(255),
+    @TenNXB NVARCHAR(255),
+    @NamXuatBan INT,
+    @GiaNhap DECIMAL(10, 2),
+    @SoLuong INT,
+    @NgayNhap DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        -- Kiểm tra đầu vào
+        IF @NamXuatBan > YEAR(GETDATE())
+            THROW 50005, 'Năm xuất bản không được lớn hơn năm hiện tại!', 1;
+        IF @GiaNhap < 0 OR @SoLuong < 0
+            THROW 50006, 'Giá nhập hoặc số lượng không được âm!', 1;
+
+        BEGIN TRANSACTION;
+        -- Kiểm tra MaTheNhap tồn tại
+        IF NOT EXISTS (SELECT 1 FROM The_Nhap WHERE MaTheNhap = @MaTheNhap)
+        BEGIN
+            THROW 50002, 'Mã thẻ nhập không tồn tại!', 1;
+        END;
+        -- Kiểm tra trạng thái thẻ nhập
+        DECLARE @TrangThai VARCHAR(50);
+        SELECT @TrangThai = TrangThai 
+        FROM The_Nhap 
+        WHERE MaTheNhap = @MaTheNhap;
+        IF @TrangThai = 'DaNhap'
+        BEGIN
+            THROW 50007, 'Thẻ nhập đã được xác nhận, không thể chỉnh sửa thông tin!', 1;
+        END;
+        -- Lấy IdS
+        DECLARE @IdS INT;
+        SELECT @IdS = IdS 
+        FROM The_Nhap 
+        WHERE MaTheNhap = @MaTheNhap;
+        -- Thêm hoặc lấy IdTacGia
+        DECLARE @IdTacGia INT;
+        IF NOT EXISTS (SELECT 1 FROM TAC_GIA WHERE TenTacGia = @TenTacGia)
+            INSERT INTO TAC_GIA (TenTacGia) VALUES (@TenTacGia);
+        SET @IdTacGia = (SELECT IdTG FROM TAC_GIA WHERE TenTacGia = @TenTacGia);
+        -- Thêm hoặc lấy IdTheLoai
+        DECLARE @IdTheLoai INT;
+        IF NOT EXISTS (SELECT 1 FROM THE_LOAI WHERE TenTheLoai = @TenTheLoai)
+            INSERT INTO THE_LOAI (TenTheLoai) VALUES (@TenTheLoai);
+        SET @IdTheLoai = (SELECT IdTL FROM THE_LOAI WHERE TenTheLoai = @TenTheLoai);
+        -- Thêm hoặc lấy IdNXB
+        DECLARE @IdNXB INT;
+        IF NOT EXISTS (SELECT 1 FROM NHA_XUAT_BAN WHERE TenNXB = @TenNXB)
+            INSERT INTO NHA_XUAT_BAN (TenNXB) VALUES (@TenNXB);
+        SET @IdNXB = (SELECT IdNXB FROM NHA_XUAT_BAN WHERE TenNXB = @TenNXB);
+        -- Cập nhật SACH
+        UPDATE SACH
+        SET TenSach = @TenSach,
+            NamXuatBan = @NamXuatBan,
+            GiaSach = @GiaNhap,
+            IdTacGia = @IdTacGia,
+            IdTheLoai = @IdTheLoai,
+            IdNXB = @IdNXB
+        WHERE IdS = @IdS;
+        -- Cập nhật The_Nhap
+        DECLARE @TongTienNhap DECIMAL(10, 2) = @GiaNhap * @SoLuong;
+        UPDATE The_Nhap
+        SET NgayNhap = @NgayNhap,
+            GiaNhap = @GiaNhap,
+            TongSoLuongNhap = @SoLuong,
+            TongTienNhap = @TongTienNhap
+        WHERE MaTheNhap = @MaTheNhap;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_XacNhanNhap
+    @MaTheNhap VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Kiểm tra MaTheNhap tồn tại và trạng thái là ChuaNhap
+        IF NOT EXISTS (SELECT 1 FROM The_Nhap WHERE MaTheNhap = @MaTheNhap AND TrangThai = 'ChuaNhap')
+        BEGIN
+            THROW 50003, 'Mã thẻ nhập không tồn tại hoặc đã được xác nhận!', 1;
+        END;
+
+        -- Lấy IdS và SoLuong
+        DECLARE @IdS INT, @SoLuong INT;
+        SELECT @IdS = IdS, @SoLuong = TongSoLuongNhap
+        FROM The_Nhap
+        WHERE MaTheNhap = @MaTheNhap;
+
+        -- Cập nhật trạng thái thẻ nhập
+        UPDATE The_Nhap
+        SET TrangThai = 'DaNhap'
+        WHERE MaTheNhap = @MaTheNhap;
+
+        -- Gọi stored procedure sp_CapNhatKhoSach
+        EXEC sp_CapNhatKhoSach @IdS, @SoLuong;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_CapNhatKhoSach
+    @IdS INT,
+    @SoLuongThem INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @KetQua NVARCHAR(100);
+    DECLARE @SoLuongHienTai INT;
+    DECLARE @TongSoLuongNhap INT;
+    -- Kiểm tra mã sách tồn tại
+    IF NOT EXISTS (SELECT 1 FROM SACH WHERE IdS = @IdS)
+    BEGIN
+        SET @KetQua = N'Mã sách không tồn tại trong bảng SACH';
+        RAISERROR (@KetQua, 16, 1);
+        RETURN;
+    END;
+    -- Lấy số lượng hiện tại từ Kho_Sach
+    SELECT @SoLuongHienTai = ISNULL(SoLuongHienTai, 0)
+    FROM Kho_Sach
+    WHERE MaSach = @IdS;
+    -- Ngăn cập nhật nếu số lượng hiện tại là 0 và số lượng thêm vào là âm
+    IF @SoLuongHienTai = 0 AND @SoLuongThem < 0
+    BEGIN
+        SET @KetQua = N'Số sách trong kho là ' + CAST(@SoLuongHienTai AS NVARCHAR(10)) + N' không đủ để thực hiện cập nhật!';
+        RAISERROR (@KetQua, 16, 1);
+        RETURN;
+    END;
+    -- Ngăn cập nhật nếu số lượng sau khi thêm vào nhỏ hơn 0
+    IF @SoLuongHienTai + @SoLuongThem < 0
+    BEGIN
+        SET @KetQua = N'Số sách trong kho là ' + CAST(@SoLuongHienTai AS NVARCHAR(10)) + N' không đủ để thực hiện cập nhật!';
+        RAISERROR (@KetQua, 16, 1);
+        RETURN;
+    END;
+    -- Lấy tổng số lượng đã nhập từ The_Nhap
+    SELECT @TongSoLuongNhap = ISNULL(SUM(TongSoLuongNhap), 0)
+    FROM The_Nhap
+    WHERE IdS = @IdS AND TrangThai = N'DaNhap';
+    -- Kiểm tra nếu số lượng sau khi cập nhật vượt quá tổng số lượng đã nhập
+    IF @TongSoLuongNhap > 0 AND @SoLuongHienTai + @SoLuongThem > @TongSoLuongNhap
+    BEGIN
+        SET @KetQua = N'Số sách nhập ban đầu là ' + CAST(@TongSoLuongNhap AS NVARCHAR(10)) + N' vượt quá số lượng đã nhập!';
+        RAISERROR (@KetQua, 16, 1);
+        RETURN;
+    END;
+    -- Cập nhật hoặc thêm vào Kho_Sach
+    IF EXISTS (SELECT 1 FROM Kho_Sach WHERE MaSach = @IdS)
+    BEGIN
+        UPDATE Kho_Sach
+        SET SoLuongHienTai = @SoLuongHienTai + @SoLuongThem,
+            TrangThaiSach = CASE
+                WHEN @SoLuongHienTai + @SoLuongThem > 0 THEN N'ConSach'
+                ELSE N'HetSach'
+            END
+        WHERE MaSach = @IdS;
+    END
+    ELSE IF @SoLuongThem > 0
+    BEGIN
+        INSERT INTO Kho_Sach (MaSach, SoLuongHienTai, TrangThaiSach)
+        VALUES (@IdS, @SoLuongThem, N'ConSach');
+    END;
+END;
+GO
+
+
+CREATE OR ALTER FUNCTION fn_KiemTraTrangThaiKhoSach (@p_IdS INT)
+RETURNS NVARCHAR(300)
+AS
+BEGIN
+    DECLARE @KetQua NVARCHAR(300);
+    DECLARE @MaSach NVARCHAR(50);
+    DECLARE @TenSach NVARCHAR(100);
+    DECLARE @SoLuong INT;
+    DECLARE @TrangThai NVARCHAR(50);
+    DECLARE @MaNV NVARCHAR(50);
+    DECLARE @HoTen NVARCHAR(50);
+    DECLARE @MaTheNhap NVARCHAR(50);
+
+    -- Lấy MaSach và TenSach từ bảng SACH
+    SELECT @MaSach = MaSach, @TenSach = TenSach
+    FROM SACH
+    WHERE IdS = @p_IdS;
+
+    -- Kiểm tra mã sách tồn tại
+    IF @MaSach IS NULL
+    BEGIN
+        SET @KetQua = N'Mã sách ' + CAST(@p_IdS AS NVARCHAR(10)) + N' không tồn tại trong danh mục sách';
+        RETURN @KetQua;
+    END;
+
+    -- Lấy thông tin từ The_Nhap, NhanVien, và Kho_Sach (lần nhập gần nhất)
+    SELECT TOP 1 
+        @MaNV = nv.MaNV,
+        @HoTen = nv.HoTen,
+        @MaTheNhap = tn.MaTheNhap,
+        @SoLuong = ISNULL(ks.SoLuongHienTai, 0),
+        @TrangThai = CASE 
+            WHEN ISNULL(ks.SoLuongHienTai, 0) > 0 THEN N'Còn Sách'
+            ELSE N'Hết Sách'
+        END
+    FROM The_Nhap tn
+    LEFT JOIN NhanVien nv ON tn.IdNV = nv.IdNV
+    LEFT JOIN Kho_Sach ks ON tn.IdS = ks.MaSach
+    WHERE tn.IdS = @p_IdS AND tn.TrangThai = N'DaNhap'
+    ORDER BY tn.NgayNhap DESC;
+
+    -- Kiểm tra nếu không có dữ liệu nhập kho
+    IF @MaNV IS NULL
+    BEGIN
+        SET @KetQua = N'Mã sách ' + @MaSach + N' chưa có dữ liệu nhập kho';
+        RETURN @KetQua;
+    END;
+
+    -- Trả về thông tin với xuống dòng
+    SET @KetQua = N'Mã nhân viên: ' + @MaNV + NCHAR(13) + NCHAR(10) +
+                  N'Tên nhân viên: ' + @HoTen + NCHAR(13) + NCHAR(10) +
+                  N'Mã thẻ nhập: ' + @MaTheNhap + NCHAR(13) + NCHAR(10) +
+                  N'Mã sách: ' + @MaSach + NCHAR(13) + NCHAR(10) +
+                  N'Tên sách: ' + @TenSach + NCHAR(13) + NCHAR(10) +
+                  N'Số lượng: ' + CAST(@SoLuong AS NVARCHAR(10)) + NCHAR(13) + NCHAR(10) +
+                  N'Trạng thái: ' + @TrangThai;
+    RETURN @KetQua;
+END;
+GO
+
+
+
+-- ViewDanhSachSach
+CREATE OR ALTER VIEW ViewDanhSachSach AS
+SELECT
+    s.MaSach,
+    s.TenSach,
+    t.TenTacGia,
+    tl.TenTheLoai,
+    nxb.TenNXB,
+    s.NamXuatBan,
+    ISNULL(ks.SoLuongHienTai, 0) AS SoLuongHienTai,
+    s.GiaSach,
+    CASE 
+        WHEN ISNULL(ks.TrangThaiSach, 'HetSach') = 'ConSach' THEN N'Còn Sách'
+        WHEN ISNULL(ks.TrangThaiSach, 'HetSach') = 'HetSach' THEN N'Hết Sách'
+        ELSE N'Hết Sách'
+    END AS TrangThaiSach,
+    s.AnhBia
+FROM SACH s
+JOIN TAC_GIA t ON s.IdTacGia = t.IdTG
+JOIN THE_LOAI tl ON s.IdTheLoai = tl.IdTL
+JOIN NHA_XUAT_BAN nxb ON s.IdNXB = nxb.IdNXB
+LEFT JOIN Kho_Sach ks ON s.IdS = ks.MaSach;
+GO
+
+
+CREATE OR ALTER VIEW ViewDanhSachTacGia AS
+SELECT
+    t.MaTacGia,
+    t.TenTacGia,
+    ISNULL(SUM(ks.SoLuongHienTai), 0) AS SoLuongSach
+FROM TAC_GIA t
+LEFT JOIN SACH s ON t.IdTG = s.IdTacGia
+LEFT JOIN Kho_Sach ks ON s.IdS = ks.MaSach
+GROUP BY t.MaTacGia, t.TenTacGia;
+GO
+
+CREATE OR ALTER VIEW ViewDanhSachTheLoai AS
+SELECT
+    tl.MaTheLoai,
+    tl.TenTheLoai,
+    ISNULL(SUM(ks.SoLuongHienTai), 0) AS SoLuongSach
+FROM THE_LOAI tl
+LEFT JOIN SACH s ON tl.IdTL = s.IdTheLoai
+LEFT JOIN Kho_Sach ks ON s.IdS = ks.MaSach
+GROUP BY tl.MaTheLoai, tl.TenTheLoai;
+GO
+
+CREATE OR ALTER VIEW ViewDanhSachNhaXuatBan AS
+SELECT
+    nxb.MaNXB,
+    nxb.TenNXB,
+    ISNULL(SUM(ks.SoLuongHienTai), 0) AS SoLuongSach
+FROM NHA_XUAT_BAN nxb
+LEFT JOIN SACH s ON nxb.IdNXB = s.IdNXB
+LEFT JOIN Kho_Sach ks ON s.IdS = ks.MaSach
+GROUP BY nxb.MaNXB, nxb.TenNXB;
+GO
+
+CREATE OR ALTER VIEW ViewChiTietTheNhap AS
+SELECT
+    nv.MaNV AS MaNhanVien,
+    tn.MaTheNhap AS MaTheNhap,
+    s.MaSach AS MaSach,
+    s.TenSach AS TenSach,
+    tg.TenTacGia AS TenTacGia,
+    nxb.TenNXB AS NhaXuatBan,
+    tl.TenTheLoai AS TheLoai,
+    s.NamXuatBan AS NamXuatBan,
+    tn.NgayNhap AS NgayNhap,
+    tn.TongSoLuongNhap AS SoLuong,
+    tn.GiaNhap AS GiaNhap,
+    tn.TongTienNhap AS ThanhTien,
+    CASE 
+        WHEN tn.TrangThai = 'ChuaNhap' THEN N'Chưa nhập'
+        WHEN tn.TrangThai = 'DaNhap' THEN N'Đã nhập'
+        ELSE N'Chưa nhập'
+    END AS TrangThai
+FROM
+    The_Nhap tn
+    INNER JOIN NhanVien nv ON tn.IdNV = nv.IdNV
+    INNER JOIN SACH s ON tn.IdS = s.IdS
+    INNER JOIN TAC_GIA tg ON s.IdTacGia = tg.IdTG
+    INNER JOIN THE_LOAI tl ON s.IdTheLoai = tl.IdTL
+    INNER JOIN NHA_XUAT_BAN nxb ON s.IdNXB = nxb.IdNXB;
+GO
+
+-- ViewLichSuNhapKho
+CREATE OR ALTER VIEW ViewLichSuNhapKho AS
+SELECT
+    tn.MaTheNhap,
+    nv.MaNV AS MaNV,
+    s.MaSach,
+    nv.HoTen AS TenNhanVien,
+    s.TenSach,
+    tn.NgayNhap,
+    tn.TongSoLuongNhap,
+    tn.TongTienNhap,
+    CASE
+        WHEN tn.TrangThai = 'DaNhap' THEN N'Đã Nhập'
+        WHEN tn.TrangThai = 'ChuaNhap' THEN N'Chưa Nhập'
+        ELSE N'Chưa Nhập'
+    END AS TrangThai
+FROM The_Nhap tn
+LEFT JOIN SACH s ON tn.IdS = s.IdS
+LEFT JOIN NhanVien nv ON tn.IdNV = nv.IdNV;
+GO
+
+CREATE OR ALTER VIEW ViewChiTietNhapKho AS
+SELECT
+    nv.MaNV AS MaNhanVien,
+    tn.MaTheNhap AS MaTheNhap,
+    s.MaSach AS MaSach,
+    s.TenSach AS TenSach,
+    tg.MaTacGia AS MaTacGia,
+    tg.TenTacGia AS TenTacGia,
+    tl.MaTheLoai AS MaTheLoai,
+    tl.TenTheLoai AS TheLoai,
+    nxb.MaNXB AS MaNhaXuatBan,
+    nxb.TenNXB AS TenNhaXuatBan,
+    s.NamXuatBan AS NamXuatBan,
+    ISNULL(ks.SoLuongHienTai, 0) AS SoLuong,
+    tn.NgayNhap AS NgayNhap,
+    tn.GiaNhap AS GiaNhap,
+    tn.TongTienNhap AS ThanhTien,
+    CASE 
+        WHEN ISNULL(ks.TrangThaiSach, 'HetSach') = 'ConSach' THEN N'Còn Sách'
+        WHEN ISNULL(ks.TrangThaiSach, 'HetSach') = 'HetSach' THEN N'Hết Sách'
+        ELSE N'Hết Sách'
+    END AS TrangThaiSach
+FROM
+    The_Nhap tn
+    INNER JOIN NhanVien nv ON tn.IdNV = nv.IdNV
+    INNER JOIN SACH s ON tn.IdS = s.IdS
+    INNER JOIN TAC_GIA tg ON s.IdTacGia = tg.IdTG
+    INNER JOIN THE_LOAI tl ON s.IdTheLoai = tl.IdTL
+    INNER JOIN NHA_XUAT_BAN nxb ON s.IdNXB = nxb.IdNXB
+    LEFT JOIN Kho_Sach ks ON s.IdS = ks.MaSach;
+GO
+
+
+
+-- Kiểm tra và bỏ qua lỗi nếu vai trò đã tồn tại (sử dụng IF NOT EXISTS nếu SQL Server hỗ trợ, nhưng tốt nhất là chỉ cấp quyền)
+IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'AdminRole')
+    CREATE ROLE AdminRole;
+IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'NhanVienRole')
+    CREATE ROLE NhanVienRole;
+GO
+
+-- Gán quyền cho AdminRole (toàn quyền)
+GRANT SELECT, INSERT, UPDATE, DELETE ON TaiKhoan TO AdminRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON [Admin] TO AdminRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON NhanVien TO AdminRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TAC_GIA TO AdminRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON THE_LOAI TO AdminRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON NHA_XUAT_BAN TO AdminRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SACH TO AdminRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON The_Nhap TO AdminRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Kho_Sach TO AdminRole;
+GRANT EXECUTE ON sp_CapNhatKhoSach TO AdminRole;
+GRANT EXECUTE ON sp_NhapSach TO AdminRole;
+GRANT EXECUTE ON sp_CapNhatSach TO AdminRole;
+GRANT EXECUTE ON sp_XacNhanNhap TO AdminRole;
+GRANT EXECUTE ON fn_KiemTraTrangThaiKhoSach TO AdminRole;
+GRANT EXECUTE ON fn_LichSuCapNhatKhoSach TO AdminRole;
+GRANT SELECT ON ViewDanhSachSach TO AdminRole;
+GRANT SELECT ON ViewDanhSachTheLoai TO AdminRole;
+GRANT SELECT ON ViewDanhSachTacGia TO AdminRole;
+GRANT SELECT ON ViewDanhSachNhaXuatBan TO AdminRole;
+GRANT SELECT ON ViewLichSuNhapKho TO AdminRole;
+GRANT SELECT ON ViewChiTietNhapKho TO AdminRole;
+GRANT SELECT ON ViewChiTietTheNhap TO AdminRole;
+GO
+
+-- Gán quyền cho NhanVienRole (giới hạn không dùng stored procedure)
+GRANT SELECT, INSERT, UPDATE, DELETE ON TaiKhoan TO NhanVienRole;
+GRANT SELECT ON [Admin] TO NhanVienRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON NhanVien TO NhanVienRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TAC_GIA TO NhanVienRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON THE_LOAI TO NhanVienRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON NHA_XUAT_BAN TO NhanVienRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SACH TO NhanVienRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON The_Nhap TO NhanVienRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Kho_Sach TO NhanVienRole;
+GRANT EXECUTE ON sp_NhapSach TO NhanVienRole;
+GRANT EXECUTE ON sp_CapNhatSach TO NhanVienRole;
+DENY EXECUTE ON sp_XacNhanNhap TO NhanVienRole; 
+GRANT EXECUTE ON sp_CapNhatKhoSach TO NhanVienRole;
+GRANT EXECUTE ON fn_KiemTraTrangThaiKhoSach TO NhanVienRole;
+GRANT EXECUTE ON fn_LichSuCapNhatKhoSach TO NhanVienRole;
+GRANT SELECT ON ViewDanhSachSach TO NhanVienRole;
+GRANT SELECT ON ViewDanhSachTheLoai TO NhanVienRole;
+GRANT SELECT ON ViewDanhSachTacGia TO NhanVienRole;
+GRANT SELECT ON ViewDanhSachNhaXuatBan TO NhanVienRole;
+GRANT SELECT ON ViewLichSuNhapKho TO NhanVienRole;
+GRANT SELECT ON ViewChiTietNhapKho TO NhanVienRole;
+GRANT SELECT ON ViewChiTietTheNhap TO NhanVienRole;
+GO
