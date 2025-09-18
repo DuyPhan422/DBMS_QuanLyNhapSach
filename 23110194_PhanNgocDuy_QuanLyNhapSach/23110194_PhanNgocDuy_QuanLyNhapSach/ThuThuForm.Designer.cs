@@ -65,7 +65,7 @@
             this.panel_Left.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel_Left.Location = new System.Drawing.Point(0, 0);
             this.panel_Left.Name = "panel_Left";
-            this.panel_Left.Size = new System.Drawing.Size(288, 842);
+            this.panel_Left.Size = new System.Drawing.Size(289, 842);
             this.panel_Left.TabIndex = 0;
             // 
             // btnLogOut
@@ -74,9 +74,9 @@
             this.btnLogOut.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnLogOut.Image = ((System.Drawing.Image)(resources.GetObject("btnLogOut.Image")));
             this.btnLogOut.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnLogOut.Location = new System.Drawing.Point(0, 527);
+            this.btnLogOut.Location = new System.Drawing.Point(0, 559);
             this.btnLogOut.Name = "btnLogOut";
-            this.btnLogOut.Size = new System.Drawing.Size(286, 69);
+            this.btnLogOut.Size = new System.Drawing.Size(287, 69);
             this.btnLogOut.TabIndex = 5;
             this.btnLogOut.Text = "Đăng Xuất";
             this.btnLogOut.UseVisualStyleBackColor = true;
@@ -88,9 +88,9 @@
             this.btnThongKe.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnThongKe.Image = ((System.Drawing.Image)(resources.GetObject("btnThongKe.Image")));
             this.btnThongKe.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnThongKe.Location = new System.Drawing.Point(0, 451);
+            this.btnThongKe.Location = new System.Drawing.Point(0, 483);
             this.btnThongKe.Name = "btnThongKe";
-            this.btnThongKe.Size = new System.Drawing.Size(286, 76);
+            this.btnThongKe.Size = new System.Drawing.Size(287, 76);
             this.btnThongKe.TabIndex = 7;
             this.btnThongKe.Text = "Thống kê";
             this.btnThongKe.UseVisualStyleBackColor = true;
@@ -102,9 +102,9 @@
             this.btnTraCuu.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnTraCuu.Image = ((System.Drawing.Image)(resources.GetObject("btnTraCuu.Image")));
             this.btnTraCuu.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnTraCuu.Location = new System.Drawing.Point(0, 385);
+            this.btnTraCuu.Location = new System.Drawing.Point(0, 417);
             this.btnTraCuu.Name = "btnTraCuu";
-            this.btnTraCuu.Size = new System.Drawing.Size(286, 66);
+            this.btnTraCuu.Size = new System.Drawing.Size(287, 66);
             this.btnTraCuu.TabIndex = 3;
             this.btnTraCuu.Text = "Tra cứu";
             this.btnTraCuu.UseVisualStyleBackColor = true;
@@ -116,9 +116,9 @@
             this.btnNhapSach.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnNhapSach.Image = ((System.Drawing.Image)(resources.GetObject("btnNhapSach.Image")));
             this.btnNhapSach.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnNhapSach.Location = new System.Drawing.Point(0, 313);
+            this.btnNhapSach.Location = new System.Drawing.Point(0, 345);
             this.btnNhapSach.Name = "btnNhapSach";
-            this.btnNhapSach.Size = new System.Drawing.Size(286, 72);
+            this.btnNhapSach.Size = new System.Drawing.Size(287, 72);
             this.btnNhapSach.TabIndex = 2;
             this.btnNhapSach.Text = "Nhập sách";
             this.btnNhapSach.UseVisualStyleBackColor = true;
@@ -130,9 +130,9 @@
             this.bntKhoSach.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.bntKhoSach.Image = ((System.Drawing.Image)(resources.GetObject("bntKhoSach.Image")));
             this.bntKhoSach.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.bntKhoSach.Location = new System.Drawing.Point(0, 241);
+            this.bntKhoSach.Location = new System.Drawing.Point(0, 273);
             this.bntKhoSach.Name = "bntKhoSach";
-            this.bntKhoSach.Size = new System.Drawing.Size(286, 72);
+            this.bntKhoSach.Size = new System.Drawing.Size(287, 72);
             this.bntKhoSach.TabIndex = 6;
             this.bntKhoSach.Text = "Kho sách";
             this.bntKhoSach.UseVisualStyleBackColor = true;
@@ -144,9 +144,9 @@
             this.btnTrangChu.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnTrangChu.Image = ((System.Drawing.Image)(resources.GetObject("btnTrangChu.Image")));
             this.btnTrangChu.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnTrangChu.Location = new System.Drawing.Point(0, 167);
+            this.btnTrangChu.Location = new System.Drawing.Point(0, 199);
             this.btnTrangChu.Name = "btnTrangChu";
-            this.btnTrangChu.Size = new System.Drawing.Size(286, 74);
+            this.btnTrangChu.Size = new System.Drawing.Size(287, 74);
             this.btnTrangChu.TabIndex = 1;
             this.btnTrangChu.Text = "Trang chủ";
             this.btnTrangChu.UseVisualStyleBackColor = true;
@@ -158,7 +158,7 @@
             this.picHeader.Image = ((System.Drawing.Image)(resources.GetObject("picHeader.Image")));
             this.picHeader.Location = new System.Drawing.Point(0, 0);
             this.picHeader.Name = "picHeader";
-            this.picHeader.Size = new System.Drawing.Size(286, 167);
+            this.picHeader.Size = new System.Drawing.Size(287, 199);
             this.picHeader.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.picHeader.TabIndex = 0;
             this.picHeader.TabStop = false;
@@ -170,9 +170,9 @@
             this.panel_Top.Controls.Add(this.pictureBox2);
             this.panel_Top.Controls.Add(this.lbThongTinNhanVien);
             this.panel_Top.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel_Top.Location = new System.Drawing.Point(288, 0);
+            this.panel_Top.Location = new System.Drawing.Point(289, 0);
             this.panel_Top.Name = "panel_Top";
-            this.panel_Top.Size = new System.Drawing.Size(1117, 95);
+            this.panel_Top.Size = new System.Drawing.Size(1116, 95);
             this.panel_Top.TabIndex = 2;
             // 
             // lbMaNhanVien
@@ -189,9 +189,9 @@
             // 
             this.pictureBox2.Dock = System.Windows.Forms.DockStyle.Right;
             this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
-            this.pictureBox2.Location = new System.Drawing.Point(913, 0);
+            this.pictureBox2.Location = new System.Drawing.Point(883, 0);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(202, 93);
+            this.pictureBox2.Size = new System.Drawing.Size(231, 93);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox2.TabIndex = 1;
             this.pictureBox2.TabStop = false;
@@ -210,9 +210,9 @@
             // 
             this.panel_Body.Controls.Add(this.picPanel);
             this.panel_Body.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel_Body.Location = new System.Drawing.Point(288, 95);
+            this.panel_Body.Location = new System.Drawing.Point(289, 95);
             this.panel_Body.Name = "panel_Body";
-            this.panel_Body.Size = new System.Drawing.Size(1117, 747);
+            this.panel_Body.Size = new System.Drawing.Size(1116, 747);
             this.panel_Body.TabIndex = 3;
             // 
             // picPanel
@@ -223,7 +223,7 @@
             this.picPanel.ImageRotate = 0F;
             this.picPanel.Location = new System.Drawing.Point(0, 0);
             this.picPanel.Name = "picPanel";
-            this.picPanel.Size = new System.Drawing.Size(1117, 747);
+            this.picPanel.Size = new System.Drawing.Size(1116, 747);
             this.picPanel.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.picPanel.TabIndex = 0;
             this.picPanel.TabStop = false;

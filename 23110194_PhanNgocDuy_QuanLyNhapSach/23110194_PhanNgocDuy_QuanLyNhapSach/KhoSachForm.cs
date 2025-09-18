@@ -21,22 +21,22 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             dbConnect = new DBConnect();
             columnConfig = new Dictionary<string, (string Header, string Format, bool Visible)>
             {
-                { "MaNhanVien", ("Mã Nhân Viên", null, true) },
-                { "MaTheNhap", ("Mã Thẻ Nhập", null, true) },
-                { "MaSach", ("Mã Sách", null, true) },
-                { "TenSach", ("Tên Sách", null, true) },
-                { "MaTacGia", ("Mã Tác Giả", null, true) },
-                { "TenTacGia", ("Tên Tác Giả", null, true) },
-                { "MaTheLoai", ("Mã Thể Loai", null, true) },
-                { "TheLoai", ("Thể Loại", null, true) },
-                { "MaNhaXuatBan", ("Mã Nhà Xuất Bản", null, true) },
-                { "TenNhaXuatBan", ("Tên Nhà Xuất Bản", null, true) },
-                { "NamXuatBan", ("Năm Xuất Bản", null, true) },
-                { "SoLuong", ("Số Lượng", null, true) },
-                { "NgayNhap", ("Ngày Nhập", "dd/MM/yyyy", true) },
-                { "GiaNhap", ("Giá Nhập", "N0", true) },
-                { "ThanhTien", ("Thành Tiền", "N0", true) },
-                { "TrangThaiSach", ("Trạng Thái Sách", null, true) }
+                { "MaNhanVien", ("Mã nhân viên", null, true) },
+                { "MaTheNhap", ("Mã thẻ nhập", null, true) },
+                { "MaSach", ("Mã sách", null, true) },
+                { "TenSach", ("Tên sách", null, true) },
+                { "MaTacGia", ("Mã tác giả", null, true) },
+                { "TenTacGia", ("Tên tác giả", null, true) },
+                { "MaTheLoai", ("Mã thể loại", null, true) },
+                { "TheLoai", ("Thể loại", null, true) },
+                { "MaNhaXuatBan", ("Mã nhà xuất bản", null, true) },
+                { "TenNhaXuatBan", ("Tên nhà xuất bản", null, true) },
+                { "NamXuatBan", ("Năm xuất bản", null, true) },
+                { "SoLuong", ("Số lượng hiện tại", null, true) },
+                { "NgayNhap", ("Ngày nhập", "dd/MM/yyyy", true) },
+                { "GiaNhap", ("Giá nhập", "N0", true) },
+                { "ThanhTien", ("Thành tiền", "N0", true) },
+                { "TrangThaiSach", ("Trạng thái sách", null, true) }
             };
             LoadMaSachComboBox();
             LoadKhoSach();
@@ -252,5 +252,7 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
 
             LoadKhoSach();
         }
+
+        
     }
 }

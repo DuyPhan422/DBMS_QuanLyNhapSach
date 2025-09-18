@@ -489,6 +489,62 @@ BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE sp_ThongKeNhapSachTheoNgay
+    @TuNgay DATE = NULL,
+    @DenNgay DATE = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT 
+        NgayNhap AS NgayNhap,
+        SUM(SoLuong) AS TongSoLuongNhap
+    FROM ViewChiTietNhapKho
+    WHERE TrangThai = N'Đã nhập'
+        AND (@TuNgay IS NULL OR NgayNhap >= @TuNgay)
+        AND (@DenNgay IS NULL OR NgayNhap <= @DenNgay)
+    GROUP BY NgayNhap
+    ORDER BY NgayNhap;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_ThongKeSachDaNhap
+    @TuNgay DATE = NULL,
+    @DenNgay DATE = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT 
+        s.MaSach,
+        s.TenSach,
+        SUM(tn.TongSoLuongNhap) AS TongSoLuongNhap
+    FROM The_Nhap tn
+    INNER JOIN SACH s ON tn.IdS = s.IdS
+    WHERE tn.TrangThai = 'DaNhap'
+        AND (@TuNgay IS NULL OR tn.NgayNhap >= @TuNgay)
+        AND (@DenNgay IS NULL OR tn.NgayNhap <= @DenNgay)
+    GROUP BY s.MaSach, s.TenSach
+    ORDER BY s.MaSach;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_ThongKeNhapSachTheoNgay
+    @TuNgay DATE = NULL,
+    @DenNgay DATE = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT 
+        tn.NgayNhap AS NgayNhap,
+        SUM(tn.TongSoLuongNhap) AS TongSoLuongNhap
+    FROM The_Nhap tn
+    WHERE tn.TrangThai = 'DaNhap'
+        AND (@TuNgay IS NULL OR tn.NgayNhap >= @TuNgay)
+        AND (@DenNgay IS NULL OR tn.NgayNhap <= @DenNgay)
+    GROUP BY tn.NgayNhap
+    ORDER BY tn.NgayNhap;
+END;
+GO
+
 
 CREATE OR ALTER FUNCTION fn_KiemTraTrangThaiKhoSach (@p_IdS INT)
 RETURNS NVARCHAR(300)
@@ -714,6 +770,8 @@ GRANT EXECUTE ON sp_CapNhatKhoSach TO AdminRole;
 GRANT EXECUTE ON sp_NhapSach TO AdminRole;
 GRANT EXECUTE ON sp_CapNhatSach TO AdminRole;
 GRANT EXECUTE ON sp_XacNhanNhap TO AdminRole;
+GRANT EXECUTE ON sp_ThongKeSachDaNhap TO AdminRole;
+GRANT EXECUTE ON sp_ThongKeNhapSachTheoNgay TO AdminRole;
 GRANT EXECUTE ON fn_KiemTraTrangThaiKhoSach TO AdminRole;
 GRANT EXECUTE ON fn_LichSuCapNhatKhoSach TO AdminRole;
 GRANT SELECT ON ViewDanhSachSach TO AdminRole;
@@ -739,6 +797,8 @@ GRANT EXECUTE ON sp_NhapSach TO NhanVienRole;
 GRANT EXECUTE ON sp_CapNhatSach TO NhanVienRole;
 DENY EXECUTE ON sp_XacNhanNhap TO NhanVienRole; 
 GRANT EXECUTE ON sp_CapNhatKhoSach TO NhanVienRole;
+GRANT EXECUTE ON sp_ThongKeSachDaNhap TO NhanVienRole;
+GRANT EXECUTE ON sp_ThongKeNhapSachTheoNgay TO NhanVienRole;
 GRANT EXECUTE ON fn_KiemTraTrangThaiKhoSach TO NhanVienRole;
 GRANT EXECUTE ON fn_LichSuCapNhatKhoSach TO NhanVienRole;
 GRANT SELECT ON ViewDanhSachSach TO NhanVienRole;

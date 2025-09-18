@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NhapSachForm));
             this.dgvNhapSach = new System.Windows.Forms.DataGridView();
             this.picUploadAnh = new System.Windows.Forms.PictureBox();
@@ -73,24 +73,24 @@
             this.dgvNhapSach.AllowUserToResizeRows = false;
             this.dgvNhapSach.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.dgvNhapSach.BackgroundColor = System.Drawing.SystemColors.ActiveCaption;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Times New Roman", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvNhapSach.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Times New Roman", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvNhapSach.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dgvNhapSach.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Times New Roman", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvNhapSach.DefaultCellStyle = dataGridViewCellStyle2;
-            this.dgvNhapSach.Location = new System.Drawing.Point(18, 509);
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Times New Roman", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvNhapSach.DefaultCellStyle = dataGridViewCellStyle6;
+            this.dgvNhapSach.Location = new System.Drawing.Point(11, 527);
             this.dgvNhapSach.Margin = new System.Windows.Forms.Padding(2);
             this.dgvNhapSach.Name = "dgvNhapSach";
             this.dgvNhapSach.ReadOnly = true;
@@ -105,7 +105,7 @@
             // 
             this.picUploadAnh.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.picUploadAnh.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.picUploadAnh.Location = new System.Drawing.Point(1110, 60);
+            this.picUploadAnh.Location = new System.Drawing.Point(1110, 82);
             this.picUploadAnh.Margin = new System.Windows.Forms.Padding(2);
             this.picUploadAnh.Name = "picUploadAnh";
             this.picUploadAnh.Size = new System.Drawing.Size(313, 318);
@@ -115,23 +115,27 @@
             // btnUploadAnh
             // 
             this.btnUploadAnh.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnUploadAnh.Location = new System.Drawing.Point(1203, 401);
+            this.btnUploadAnh.Image = ((System.Drawing.Image)(resources.GetObject("btnUploadAnh.Image")));
+            this.btnUploadAnh.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnUploadAnh.Location = new System.Drawing.Point(1194, 419);
             this.btnUploadAnh.Margin = new System.Windows.Forms.Padding(2);
             this.btnUploadAnh.Name = "btnUploadAnh";
-            this.btnUploadAnh.Size = new System.Drawing.Size(151, 48);
+            this.btnUploadAnh.Size = new System.Drawing.Size(186, 48);
             this.btnUploadAnh.TabIndex = 63;
             this.btnUploadAnh.Text = "Thêm ảnh";
+            this.btnUploadAnh.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnUploadAnh.UseVisualStyleBackColor = true;
             this.btnUploadAnh.Click += new System.EventHandler(this.btnUploadAnh_Click);
             // 
             // label11
             // 
             this.label11.BackColor = System.Drawing.Color.Ivory;
+            this.label11.Dock = System.Windows.Forms.DockStyle.Top;
             this.label11.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label11.ForeColor = System.Drawing.Color.Red;
-            this.label11.Location = new System.Drawing.Point(65, 6);
+            this.label11.Location = new System.Drawing.Point(0, 0);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(1606, 35);
+            this.label11.Size = new System.Drawing.Size(1793, 58);
             this.label11.TabIndex = 61;
             this.label11.Text = "QUẢN LÝ NHẬP SÁCH UTE";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -140,12 +144,12 @@
             // 
             this.lbBangNhapSach.AutoSize = true;
             this.lbBangNhapSach.BackColor = System.Drawing.Color.Transparent;
-            this.lbBangNhapSach.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbBangNhapSach.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbBangNhapSach.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.lbBangNhapSach.Location = new System.Drawing.Point(13, 470);
+            this.lbBangNhapSach.Location = new System.Drawing.Point(13, 480);
             this.lbBangNhapSach.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbBangNhapSach.Name = "lbBangNhapSach";
-            this.lbBangNhapSach.Size = new System.Drawing.Size(170, 27);
+            this.lbBangNhapSach.Size = new System.Drawing.Size(164, 26);
             this.lbBangNhapSach.TabIndex = 66;
             this.lbBangNhapSach.Text = "Bảng nhập sách:";
             // 
@@ -178,7 +182,7 @@
             this.grbNhapSach.CustomBorderColor = System.Drawing.Color.Bisque;
             this.grbNhapSach.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.grbNhapSach.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.grbNhapSach.Location = new System.Drawing.Point(18, 64);
+            this.grbNhapSach.Location = new System.Drawing.Point(18, 82);
             this.grbNhapSach.Name = "grbNhapSach";
             this.grbNhapSach.Size = new System.Drawing.Size(941, 385);
             this.grbNhapSach.TabIndex = 67;
@@ -198,12 +202,15 @@
             // 
             // btnXacNhanNhap
             // 
-            this.btnXacNhanNhap.Location = new System.Drawing.Point(626, 324);
+            this.btnXacNhanNhap.Image = ((System.Drawing.Image)(resources.GetObject("btnXacNhanNhap.Image")));
+            this.btnXacNhanNhap.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnXacNhanNhap.Location = new System.Drawing.Point(636, 324);
             this.btnXacNhanNhap.Margin = new System.Windows.Forms.Padding(2);
             this.btnXacNhanNhap.Name = "btnXacNhanNhap";
-            this.btnXacNhanNhap.Size = new System.Drawing.Size(177, 48);
+            this.btnXacNhanNhap.Size = new System.Drawing.Size(238, 48);
             this.btnXacNhanNhap.TabIndex = 84;
             this.btnXacNhanNhap.Text = "Xác nhận nhập";
+            this.btnXacNhanNhap.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnXacNhanNhap.UseVisualStyleBackColor = true;
             this.btnXacNhanNhap.Click += new System.EventHandler(this.btnXacNhanNhap_Click);
             // 
@@ -253,12 +260,15 @@
             // 
             // btnXoaSach
             // 
-            this.btnXoaSach.Location = new System.Drawing.Point(442, 324);
+            this.btnXoaSach.Image = ((System.Drawing.Image)(resources.GetObject("btnXoaSach.Image")));
+            this.btnXoaSach.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnXoaSach.Location = new System.Drawing.Point(435, 324);
             this.btnXoaSach.Margin = new System.Windows.Forms.Padding(2);
             this.btnXoaSach.Name = "btnXoaSach";
-            this.btnXoaSach.Size = new System.Drawing.Size(121, 48);
+            this.btnXoaSach.Size = new System.Drawing.Size(175, 48);
             this.btnXoaSach.TabIndex = 17;
             this.btnXoaSach.Text = "Xóa sách";
+            this.btnXoaSach.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnXoaSach.UseVisualStyleBackColor = true;
             this.btnXoaSach.Click += new System.EventHandler(this.btnXoaSach_Click);
             // 
@@ -282,19 +292,22 @@
             // 
             // btnNhapSach
             // 
-            this.btnNhapSach.Location = new System.Drawing.Point(36, 324);
+            this.btnNhapSach.Image = ((System.Drawing.Image)(resources.GetObject("btnNhapSach.Image")));
+            this.btnNhapSach.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnNhapSach.Location = new System.Drawing.Point(17, 324);
             this.btnNhapSach.Margin = new System.Windows.Forms.Padding(2);
             this.btnNhapSach.Name = "btnNhapSach";
-            this.btnNhapSach.Size = new System.Drawing.Size(133, 48);
+            this.btnNhapSach.Size = new System.Drawing.Size(189, 48);
             this.btnNhapSach.TabIndex = 16;
             this.btnNhapSach.Text = "Nhập sách";
+            this.btnNhapSach.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnNhapSach.UseVisualStyleBackColor = true;
             this.btnNhapSach.Click += new System.EventHandler(this.btnNhapSach_Click);
             // 
             // txtGiaNhap
             // 
             this.txtGiaNhap.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtGiaNhap.Location = new System.Drawing.Point(419, 274);
+            this.txtGiaNhap.Location = new System.Drawing.Point(414, 274);
             this.txtGiaNhap.Margin = new System.Windows.Forms.Padding(2, 1, 2, 1);
             this.txtGiaNhap.Name = "txtGiaNhap";
             this.txtGiaNhap.Size = new System.Drawing.Size(207, 30);
@@ -302,12 +315,15 @@
             // 
             // btnCapNhat
             // 
-            this.btnCapNhat.Location = new System.Drawing.Point(231, 324);
+            this.btnCapNhat.Image = ((System.Drawing.Image)(resources.GetObject("btnCapNhat.Image")));
+            this.btnCapNhat.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnCapNhat.Location = new System.Drawing.Point(234, 324);
             this.btnCapNhat.Margin = new System.Windows.Forms.Padding(2);
             this.btnCapNhat.Name = "btnCapNhat";
-            this.btnCapNhat.Size = new System.Drawing.Size(137, 48);
+            this.btnCapNhat.Size = new System.Drawing.Size(169, 48);
             this.btnCapNhat.TabIndex = 18;
             this.btnCapNhat.Text = "Cập nhật";
+            this.btnCapNhat.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnCapNhat.UseVisualStyleBackColor = true;
             this.btnCapNhat.Click += new System.EventHandler(this.btnCapNhat_Click);
             // 
@@ -333,9 +349,9 @@
             this.lbGiaNhap.Location = new System.Drawing.Point(280, 274);
             this.lbGiaNhap.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbGiaNhap.Name = "lbGiaNhap";
-            this.lbGiaNhap.Size = new System.Drawing.Size(106, 26);
+            this.lbGiaNhap.Size = new System.Drawing.Size(102, 26);
             this.lbGiaNhap.TabIndex = 76;
-            this.lbGiaNhap.Text = "Giá Nhập:";
+            this.lbGiaNhap.Text = "Giá nhập:";
             // 
             // lbTenSach
             // 

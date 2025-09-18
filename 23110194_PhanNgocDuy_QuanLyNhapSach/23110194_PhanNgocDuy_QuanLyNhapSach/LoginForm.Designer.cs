@@ -74,6 +74,7 @@
             // grbTaiKhoanHeThong
             // 
             this.grbTaiKhoanHeThong.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.grbTaiKhoanHeThong.BackColor = System.Drawing.Color.Azure;
             this.grbTaiKhoanHeThong.Controls.Add(this.btnShowPass);
             this.grbTaiKhoanHeThong.Controls.Add(this.label5);
             this.grbTaiKhoanHeThong.Controls.Add(this.txtMatKhau);
@@ -94,10 +95,10 @@
             // 
             this.btnShowPass.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.btnShowPass.AutoSize = true;
-            this.btnShowPass.Font = new System.Drawing.Font("Century Gothic", 7.8F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnShowPass.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnShowPass.Location = new System.Drawing.Point(189, 204);
             this.btnShowPass.Name = "btnShowPass";
-            this.btnShowPass.Size = new System.Drawing.Size(62, 20);
+            this.btnShowPass.Size = new System.Drawing.Size(77, 26);
             this.btnShowPass.TabIndex = 6;
             this.btnShowPass.Text = "Show";
             this.btnShowPass.UseVisualStyleBackColor = true;
@@ -165,14 +166,15 @@
             // btnLogin
             // 
             this.btnLogin.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.btnLogin.Font = new System.Drawing.Font("Century Gothic", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnLogin.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnLogin.Image = ((System.Drawing.Image)(resources.GetObject("btnLogin.Image")));
             this.btnLogin.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnLogin.Location = new System.Drawing.Point(105, 251);
+            this.btnLogin.Location = new System.Drawing.Point(133, 236);
             this.btnLogin.Name = "btnLogin";
-            this.btnLogin.Size = new System.Drawing.Size(132, 45);
+            this.btnLogin.Size = new System.Drawing.Size(140, 65);
             this.btnLogin.TabIndex = 3;
-            this.btnLogin.Text = "        Login";
+            this.btnLogin.Text = "Login";
+            this.btnLogin.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnLogin.UseVisualStyleBackColor = true;
             this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
             // 
