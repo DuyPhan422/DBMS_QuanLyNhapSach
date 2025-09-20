@@ -1,0 +1,501 @@
+IF OBJECT_ID('ThePhat', 'U') IS NOT NULL DROP TABLE ThePhat;
+IF OBJECT_ID('TraSach', 'U') IS NOT NULL DROP TABLE TraSach;
+IF OBJECT_ID('ChiTietTheMuon', 'U') IS NOT NULL DROP TABLE ChiTietTheMuon;
+IF OBJECT_ID('TheMuon', 'U') IS NOT NULL DROP TABLE TheMuon;
+IF OBJECT_ID('Kho_Sach', 'U') IS NOT NULL DROP TABLE Kho_Sach;
+IF OBJECT_ID('The_Nhap', 'U') IS NOT NULL DROP TABLE The_Nhap;
+IF OBJECT_ID('SACH', 'U') IS NOT NULL DROP TABLE SACH;
+IF OBJECT_ID('NHA_XUAT_BAN', 'U') IS NOT NULL DROP TABLE NHA_XUAT_BAN;
+IF OBJECT_ID('THE_LOAI', 'U') IS NOT NULL DROP TABLE THE_LOAI;
+IF OBJECT_ID('TAC_GIA', 'U') IS NOT NULL DROP TABLE TAC_GIA;
+IF OBJECT_ID('DocGia', 'U') IS NOT NULL DROP TABLE DocGia;
+IF OBJECT_ID('NhanVien', 'U') IS NOT NULL DROP TABLE NhanVien;
+IF OBJECT_ID('Admin', 'U') IS NOT NULL DROP TABLE [Admin];
+IF OBJECT_ID('TaiKhoan', 'U') IS NOT NULL DROP TABLE TaiKhoan;
+GO
+
+CREATE TABLE TaiKhoan(
+	MaTK INT PRIMARY KEY IDENTITY(1, 1),
+	TenDangNhap VARCHAR(50) NOT NULL UNIQUE,
+	MatKhauMaHoa VARCHAR(255) NOT NULL,
+    	VaiTro TINYINT NOT NULL CHECK (VaiTro IN (0,1)), 
+    	-- 0 = Admin, 1 = NhanVien
+    	TrangThai TINYINT NOT NULL DEFAULT 1 CHECK (TrangThai IN (0,1,2))
+    	-- 0 = KhoaVinhVien, 1 = HoatDong, 2 = TamKhoa
+);
+CREATE TABLE [Admin](
+	MaTK INT NULL REFERENCES TaiKhoan(MaTK)
+		ON DELETE SET NULL,
+	HoTen NVARCHAR(50) NOT NULL,
+	NgaySinh DATE,
+	Email VARCHAR(50) UNIQUE,
+	SoDienThoai VARCHAR(20) UNIQUE NOT NULL,
+);
+
+CREATE TABLE NhanVien(
+	IdNV INT PRIMARY KEY IDENTITY(1, 1),
+	MaNV VARCHAR(50) NULL,
+	MaTK INT NULL REFERENCES TaiKhoan(MaTK)
+		ON DELETE SET NULL,
+	HoTen NVARCHAR(50) NOT NULL,
+	NgaySinh DATE,
+	Email VARCHAR(50) UNIQUE,
+	SoDienThoai VARCHAR(20) UNIQUE NOT NULL,
+	ChucVu NVARCHAR(50) NOT NULL CHECK (ChucVu IN ('ThuThu', 'NhanVienPartTime', 'NhanVienFullTime'))
+);
+
+CREATE TABLE TAC_GIA (
+    IdTG INT PRIMARY KEY IDENTITY(1, 1),
+    MaTacGia VARCHAR(50) NULL, 
+    TenTacGia NVARCHAR(255) NOT NULL
+);
+GO
+
+CREATE TABLE THE_LOAI (
+    IdTL INT PRIMARY KEY IDENTITY(1, 1),
+    MaTheLoai VARCHAR(50) NULL,  
+    TenTheLoai NVARCHAR(255) NOT NULL
+);
+GO
+
+CREATE TABLE NHA_XUAT_BAN (
+    IdNXB INT PRIMARY KEY IDENTITY(1, 1),
+    MaNXB VARCHAR(50) NULL,  
+    TenNXB NVARCHAR(255) NOT NULL
+);
+GO
+	
+CREATE TABLE SACH (
+    IdS INT PRIMARY KEY IDENTITY(1, 1),
+    MaSach VARCHAR(50) NULL,  
+    TenSach NVARCHAR(255) NOT NULL,
+    NamXuatBan INT NOT NULL CHECK (NamXuatBan > 0),
+    GiaSach DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    AnhBia VARBINARY(MAX),
+    IdNXB INT NOT NULL REFERENCES NHA_XUAT_BAN(IdNXB) ON DELETE NO ACTION,  
+    IdTacGia INT NOT NULL REFERENCES TAC_GIA(IdTG) ON DELETE NO ACTION,  
+    IdTheLoai INT NOT NULL REFERENCES THE_LOAI(IdTL) ON DELETE NO ACTION  
+);
+GO
+
+CREATE TABLE The_Nhap (
+    IdTN INT PRIMARY KEY IDENTITY(1, 1),
+    MaTheNhap VARCHAR(50) NULL,
+	IdS INT NOT NULL REFERENCES SACH(IdS) ON DELETE NO ACTION,
+    IdNV INT NOT NULL REFERENCES NhanVien(IdNV) ON DELETE NO ACTION,
+    NgayNhap DATE NOT NULL,
+    TrangThai VARCHAR(50) NOT NULL CHECK (TrangThai IN ('DaNhap', 'ChuaNhap')),
+    GiaNhap DECIMAL(10, 2) NOT NULL DEFAULT 0.00 CHECK (GiaNhap >= 0),
+	TongTienNhap DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+	TongSoLuongNhap INT NOT NULL CHECK (TongSoLuongNhap > 0)
+);
+GO
+	
+CREATE TABLE Kho_Sach (
+    IdK INT PRIMARY KEY IDENTITY(1, 1),  
+    MaSach INT NOT NULL REFERENCES SACH(IdS) ON DELETE CASCADE,  
+    SoLuongHienTai INT NOT NULL DEFAULT 0 CHECK (SoLuongHienTai >= 0),
+    TrangThaiSach VARCHAR(50) NOT NULL DEFAULT 'HetSach' CHECK (TrangThaiSach IN ('ConSach', 'HetSach'))
+);
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertNV
+ON NhanVien
+AFTER INSERT
+AS
+BEGIN
+	UPDATE NhanVien
+	SET MaNV = 'NV' + RIGHT('0000' + CAST(i.IdNV AS varchar(4)), 4)
+	FROM NhanVien NV
+	INNER JOIN inserted i ON NV.IdNV = i.IdNV
+END;
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertTacGia
+ON TAC_GIA
+AFTER INSERT
+AS
+BEGIN
+    UPDATE TAC_GIA
+    SET MaTacGia = 'TG' + RIGHT('000' + CAST(i.IdTG AS VARCHAR(3)), 3)
+    FROM TAC_GIA TG
+    INNER JOIN inserted i ON TG.IdTG = i.IdTG;
+END;
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertTheLoai
+ON THE_LOAI
+AFTER INSERT
+AS
+BEGIN
+    UPDATE THE_LOAI
+    SET MaTheLoai = 'TL' + RIGHT('000' + CAST(i.IdTL AS VARCHAR(3)), 3)
+    FROM THE_LOAI TL
+    INNER JOIN inserted i ON TL.IdTL = i.IdTL;
+END;
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertNXB
+ON NHA_XUAT_BAN
+AFTER INSERT
+AS
+BEGIN
+    UPDATE NHA_XUAT_BAN
+    SET MaNXB = 'NXB' + RIGHT('000' + CAST(i.IdNXB AS VARCHAR(3)), 3)
+    FROM NHA_XUAT_BAN NXB
+    INNER JOIN inserted i ON NXB.IdNXB = i.IdNXB;
+END;
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertSach
+ON SACH
+AFTER INSERT
+AS
+BEGIN
+    UPDATE SACH
+    SET MaSach = 'S' + RIGHT('000' + CAST(i.IdS AS VARCHAR(3)), 3)
+    FROM SACH S
+    INNER JOIN inserted i ON S.IdS = i.IdS;
+END;
+GO
+
+CREATE OR ALTER TRIGGER trg_InsertTheNhap
+ON The_Nhap
+AFTER INSERT
+AS
+BEGIN
+    UPDATE The_Nhap
+    SET MaTheNhap = 'TN' + RIGHT('000' + CAST(i.IdTN AS VARCHAR(3)), 3)
+    FROM The_Nhap TN
+    INNER JOIN inserted i ON TN.IdTN = i.IdTN;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_NhapSach
+    @MaNhanVien VARCHAR(50),        -- Mã nhân viên nhập sách
+    @TenSach NVARCHAR(255),         -- Tên sách
+    @TenTacGia NVARCHAR(255),       -- Tên tác giả
+    @TenTheLoai NVARCHAR(255),      -- Tên thể loại
+    @TenNhaXuatBan NVARCHAR(255),   -- Tên nhà xuất bản
+    @NamXuatBan INT,                -- Năm xuất bản
+    @GiaNhap DECIMAL(10, 2),        -- Giá nhập một cuốn sách
+    @SoLuong INT,                   -- Số lượng sách nhập
+    @NgayNhap DATE                  -- Ngày nhập sách
+AS
+BEGIN
+    SET NOCOUNT ON; -- Ngăn trả về số dòng bị ảnh hưởng
+
+    -- Bắt đầu giao dịch để đảm bảo tính toàn vẹn dữ liệu
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Kiểm tra dữ liệu đầu vào
+        IF @NamXuatBan > YEAR(GETDATE())
+            THROW 50005, N'Năm xuất bản không được lớn hơn năm hiện tại!', 1;
+        IF @GiaNhap < 0 OR @SoLuong < 0
+            THROW 50006, N'Giá nhập hoặc số lượng không được âm!', 1;
+
+        -- Kiểm tra mã nhân viên tồn tại
+        DECLARE @IdNhanVien INT;
+        SELECT @IdNhanVien = IdNV 
+        FROM NhanVien 
+        WHERE MaNV = @MaNhanVien;
+        IF @IdNhanVien IS NULL
+            THROW 50001, N'Mã nhân viên không tồn tại!', 1;
+
+        -- Lấy hoặc thêm mới tác giả
+        DECLARE @IdTacGia INT;
+        IF NOT EXISTS (SELECT 1 FROM TAC_GIA WHERE TenTacGia = @TenTacGia)
+            INSERT INTO TAC_GIA (TenTacGia) VALUES (@TenTacGia);
+        SELECT @IdTacGia = IdTG 
+        FROM TAC_GIA 
+        WHERE TenTacGia = @TenTacGia;
+
+        -- Lấy hoặc thêm mới thể loại
+        DECLARE @IdTheLoai INT;
+        IF NOT EXISTS (SELECT 1 FROM THE_LOAI WHERE TenTheLoai = @TenTheLoai)
+            INSERT INTO THE_LOAI (TenTheLoai) VALUES (@TenTheLoai);
+        SELECT @IdTheLoai = IdTL 
+        FROM THE_LOAI 
+        WHERE TenTheLoai = @TenTheLoai;
+
+        -- Lấy hoặc thêm mới nhà xuất bản
+        DECLARE @IdNhaXuatBan INT;
+        IF NOT EXISTS (SELECT 1 FROM NHA_XUAT_BAN WHERE TenNXB = @TenNhaXuatBan)
+            INSERT INTO NHA_XUAT_BAN (TenNXB) VALUES (@TenNhaXuatBan);
+        SELECT @IdNhaXuatBan = IdNXB 
+        FROM NHA_XUAT_BAN 
+        WHERE TenNXB = @TenNhaXuatBan;
+
+        -- Lấy hoặc thêm mới sách
+        DECLARE @IdSach INT;
+        IF NOT EXISTS (
+            SELECT 1 
+            FROM SACH 
+            WHERE TenSach = @TenSach 
+            AND IdTacGia = @IdTacGia 
+            AND IdTheLoai = @IdTheLoai 
+            AND IdNXB = @IdNhaXuatBan 
+            AND NamXuatBan = @NamXuatBan
+        )
+        BEGIN
+            INSERT INTO SACH (TenSach, NamXuatBan, GiaSach, IdTacGia, IdTheLoai, IdNXB, AnhBia)
+            VALUES (@TenSach, @NamXuatBan, @GiaNhap, @IdTacGia, @IdTheLoai, @IdNhaXuatBan, NULL);
+            SET @IdSach = SCOPE_IDENTITY();
+        END
+        ELSE
+        BEGIN
+            SELECT @IdSach = IdS 
+            FROM SACH 
+            WHERE TenSach = @TenSach 
+            AND IdTacGia = @IdTacGia 
+            AND IdTheLoai = @IdTheLoai 
+            AND IdNXB = @IdNhaXuatBan 
+            AND NamXuatBan = @NamXuatBan;
+        END;
+
+        -- Thêm phiếu nhập sách
+        INSERT INTO The_Nhap (IdNV, IdS, NgayNhap, TrangThai, GiaNhap, TongSoLuongNhap, TongTienNhap)
+        VALUES (@IdNhanVien, @IdSach, @NgayNhap, 'ChuaNhap', @GiaNhap, @SoLuong, @GiaNhap * @SoLuong);
+
+        -- Hoàn tất giao dịch
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Hủy giao dịch nếu có lỗi
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        THROW @ErrorSeverity, @ErrorMessage, @ErrorState;
+    END CATCH;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_CapNhatSach
+    @MaTheNhap VARCHAR(50),         -- Mã thẻ nhập
+    @TenSach NVARCHAR(255),         -- Tên sách
+    @TenTacGia NVARCHAR(255),       -- Tên tác giả
+    @TenTheLoai NVARCHAR(255),      -- Tên thể loại
+    @TenNhaXuatBan NVARCHAR(255),   -- Tên nhà xuất bản
+    @NamXuatBan INT,                -- Năm xuất bản
+    @GiaNhap DECIMAL(10, 2),        -- Giá nhập một cuốn sách
+    @SoLuong INT,                   -- Số lượng sách nhập
+    @NgayNhap DATE                  -- Ngày nhập sách
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Bắt đầu giao dịch để đảm bảo tính toàn vẹn dữ liệu
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Kiểm tra dữ liệu đầu vào
+        IF @NamXuatBan > YEAR(GETDATE())
+            THROW 50005, N'Năm xuất bản không được lớn hơn năm hiện tại!', 1;
+        IF @GiaNhap < 0 OR @SoLuong < 0
+            THROW 50006, N'Giá nhập hoặc số lượng không được âm!', 1;
+
+        -- Kiểm tra mã thẻ nhập tồn tại
+        IF NOT EXISTS (SELECT 1 FROM The_Nhap WHERE MaTheNhap = @MaTheNhap)
+            THROW 50002, N'Mã thẻ nhập không tồn tại!', 1;
+
+        -- Kiểm tra trạng thái thẻ nhập
+        IF EXISTS (SELECT 1 FROM The_Nhap WHERE MaTheNhap = @MaTheNhap AND TrangThai = 'DaNhap')
+            THROW 50007, N'Thẻ nhập đã được xác nhận, không thể chỉnh sửa!', 1;
+
+        -- Lấy ID sách từ thẻ nhập
+        DECLARE @IdSach INT;
+        SELECT @IdSach = IdS 
+        FROM The_Nhap 
+        WHERE MaTheNhap = @MaTheNhap;
+
+        -- Lấy hoặc thêm mới tác giả
+        DECLARE @IdTacGia INT;
+        IF NOT EXISTS (SELECT 1 FROM TAC_GIA WHERE TenTacGia = @TenTacGia)
+            INSERT INTO TAC_GIA (TenTacGia) VALUES (@TenTacGia);
+        SELECT @IdTacGia = IdTG 
+        FROM TAC_GIA 
+        WHERE TenTacGia = @TenTacGia;
+
+        -- Lấy hoặc thêm mới thể loại
+        DECLARE @IdTheLoai INT;
+        IF NOT EXISTS (SELECT 1 FROM THE_LOAI WHERE TenTheLoai = @TenTheLoai)
+            INSERT INTO THE_LOAI (TenTheLoai) VALUES (@TenTheLoai);
+        SELECT @IdTheLoai = IdTL 
+        FROM THE_LOAI 
+        WHERE TenTheLoai = @TenTheLoai;
+
+        -- Lấy hoặc thêm mới nhà xuất bản
+        DECLARE @IdNhaXuatBan INT;
+        IF NOT EXISTS (SELECT 1 FROM NHA_XUAT_BAN WHERE TenNXB = @TenNhaXuatBan)
+            INSERT INTO NHA_XUAT_BAN (TenNXB) VALUES (@TenNhaXuatBan);
+        SELECT @IdNhaXuatBan = IdNXB 
+        FROM NHA_XUAT_BAN 
+        WHERE TenNXB = @TenNhaXuatBan;
+
+        -- Cập nhật thông tin sách
+        UPDATE SACH
+        SET TenSach = @TenSach,
+            NamXuatBan = @NamXuatBan,
+            GiaSach = @GiaNhap,
+            IdTacGia = @IdTacGia,
+            IdTheLoai = @IdTheLoai,
+            IdNXB = @IdNhaXuatBan
+        WHERE IdS = @IdSach;
+
+        -- Cập nhật thông tin thẻ nhập
+        UPDATE The_Nhap
+        SET NgayNhap = @NgayNhap,
+            GiaNhap = @GiaNhap,
+            TongSoLuongNhap = @SoLuong,
+            TongTienNhap = @GiaNhap * @SoLuong
+        WHERE MaTheNhap = @MaTheNhap;
+
+        -- Hoàn tất giao dịch
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Hủy giao dịch nếu có lỗi
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        THROW @ErrorSeverity, @ErrorMessage, @ErrorState;
+    END CATCH;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_XacNhanNhap
+    @MaTheNhap VARCHAR(50) -- Mã thẻ nhập cần xác nhận
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Bắt đầu giao dịch để đảm bảo tính toàn vẹn dữ liệu
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Kiểm tra mã thẻ nhập tồn tại và trạng thái là 'ChuaNhap'
+        IF NOT EXISTS (SELECT 1 FROM The_Nhap WHERE MaTheNhap = @MaTheNhap AND TrangThai = 'ChuaNhap')
+            THROW 50003, N'Mã thẻ nhập không tồn tại hoặc đã được xác nhận!', 1;
+
+        -- Lấy ID sách và số lượng nhập
+        DECLARE @IdSach INT, @SoLuong INT;
+        SELECT @IdSach = IdS, @SoLuong = TongSoLuongNhap
+        FROM The_Nhap
+        WHERE MaTheNhap = @MaTheNhap;
+
+        -- Cập nhật trạng thái thẻ nhập
+        UPDATE The_Nhap
+        SET TrangThai = 'DaNhap'
+        WHERE MaTheNhap = @MaTheNhap;
+
+        -- Cập nhật kho sách
+        EXEC sp_CapNhatKhoSach @IdSach, @SoLuong;
+
+        -- Hoàn tất giao dịch
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Hủy giao dịch nếu có lỗi
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_CapNhatKhoSach
+    @IdSach INT,         -- ID sách cần cập nhật
+    @SoLuongThem INT     -- Số lượng sách thêm vào kho
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Bắt đầu giao dịch để đảm bảo tính toàn vẹn dữ liệu
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Kiểm tra mã sách tồn tại
+        IF NOT EXISTS (SELECT 1 FROM SACH WHERE IdS = @IdSach)
+            THROW 50004, N'Mã sách không tồn tại trong bảng SACH!', 1;
+
+        -- Lấy số lượng hiện tại trong kho
+        DECLARE @SoLuongHienTai INT;
+        SELECT @SoLuongHienTai = ISNULL(SoLuongHienTai, 0)
+        FROM Kho_Sach
+        WHERE MaSach = @IdSach;
+
+        -- Kiểm tra số lượng hợp lệ
+        IF @SoLuongHienTai + @SoLuongThem < 0
+            THROW 50008, N'Số lượng sách trong kho không đủ để thực hiện cập nhật!', 1;
+
+        -- Lấy tổng số lượng đã nhập
+        DECLARE @TongSoLuongNhap INT;
+        SELECT @TongSoLuongNhap = ISNULL(SUM(TongSoLuongNhap), 0)
+        FROM The_Nhap
+        WHERE IdS = @IdSach AND TrangThai = 'DaNhap';
+
+        -- Kiểm tra nếu số lượng sau cập nhật vượt quá số lượng đã nhập
+        IF @TongSoLuongNhap > 0 AND @SoLuongHienTai + @SoLuongThem > @TongSoLuongNhap
+            THROW 50009, N'Số lượng sách nhập vượt quá số lượng đã nhập!', 1;
+
+        -- Cập nhật hoặc thêm mới vào kho sách
+        IF EXISTS (SELECT 1 FROM Kho_Sach WHERE MaSach = @IdSach)
+        BEGIN
+            UPDATE Kho_Sach
+            SET SoLuongHienTai = @SoLuongHienTai + @SoLuongThem,
+                TrangThaiSach = CASE WHEN @SoLuongHienTai + @SoLuongThem > 0 THEN 'ConSach' ELSE 'HetSach' END
+            WHERE MaSach = @IdSach;
+        END
+        ELSE IF @SoLuongThem > 0
+        BEGIN
+            INSERT INTO Kho_Sach (MaSach, SoLuongHienTai, TrangThaiSach)
+            VALUES (@IdSach, @SoLuongThem, 'ConSach');
+        END;
+
+        -- Hoàn tất giao dịch
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Hủy giao dịch nếu có lỗi
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        THROW @ErrorSeverity, @ErrorMessage, @ErrorState;
+    END CATCH;
+END;
+GO
+
+CREATE OR ALTER VIEW ViewChiTietTheNhap
+AS
+SELECT
+    nv.MaNV AS MaNhanVien,                  -- Mã nhân viên nhập sách
+    tn.MaTheNhap AS MaTheNhap,              -- Mã thẻ nhập
+    s.MaSach AS MaSach,                     -- Mã sách
+    s.TenSach AS TenSach,                   -- Tên sách
+    tg.TenTacGia AS TenTacGia,              -- Tên tác giả
+    nxb.TenNXB AS NhaXuatBan,               -- Tên nhà xuất bản
+    tl.TenTheLoai AS TheLoai,               -- Tên thể loại
+    s.NamXuatBan AS NamXuatBan,             -- Năm xuất bản
+    tn.NgayNhap AS NgayNhap,                -- Ngày nhập sách
+    tn.TongSoLuongNhap AS SoLuong,          -- Số lượng sách nhập
+    tn.GiaNhap AS GiaNhap,                  -- Giá nhập một cuốn sách
+    tn.TongTienNhap AS ThanhTien,           -- Tổng tiền nhập
+    CASE
+        WHEN tn.TrangThai = 'ChuaNhap' THEN N'Chưa nhập'
+        WHEN tn.TrangThai = 'DaNhap' THEN N'Đã nhập'
+        ELSE N'Chưa nhập'
+    END AS TrangThai                        -- Trạng thái phiếu nhập
+FROM The_Nhap tn
+INNER JOIN NhanVien nv ON tn.IdNV = nv.IdNV
+INNER JOIN SACH s ON tn.IdS = s.IdS
+INNER JOIN TAC_GIA tg ON s.IdTacGia = tg.IdTG
+INNER JOIN THE_LOAI tl ON s.IdTheLoai = tl.IdTL
+INNER JOIN NHA_XUAT_BAN nxb ON s.IdNXB = nxb.IdNXB;
+GO

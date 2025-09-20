@@ -15,6 +15,8 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
     {
         private readonly DBConnect dbConnect;
         private readonly Dictionary<string, (string Header, string Format, bool Visible)> columnConfig;
+        private string lastCheckedMaSach; // Lưu mã sách được kiểm tra gần nhất
+        private bool hasData;
         public KhoSachForm()
         {
             InitializeComponent();
@@ -40,6 +42,8 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             };
             LoadMaSachComboBox();
             LoadKhoSach();
+            lastCheckedMaSach = null; // Khởi tạo ban đầu
+            hasData = true; // Giả định có dữ liệu ban đầu
         }
         private void KhoSachForm_Load(object sender, EventArgs e)
         {
@@ -92,34 +96,23 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
 
         private void LoadKhoSach()
         {
-            try
-            {
-                string query = "SELECT * FROM ViewChiTietNhapKho ORDER BY MaNhanVien";
+              string query = "SELECT * FROM ViewChiTietNhapKho ORDER BY MaNhanVien";
                 DataTable dt = dbConnect.ExecuteQuery(query);
                 dgvKhoSach.DataSource = dt;
                 ConfigureColumns(dgvKhoSach, columnConfig);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Đã xảy ra lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            
         }
 
         private void LoadMaSachComboBox()
         {
-            try
-            {
-                string query = "SELECT MaSach FROM ViewChiTietNhapKho";
-                DataTable dt = dbConnect.ExecuteQuery(query);
-                cbxMaSach.DataSource = dt;
-                cbxMaSach.DisplayMember = "MaSach";
-                cbxMaSach.ValueMember = "MaSach";
-                cbxMaSach.SelectedIndex = -1;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Đã xảy ra lỗi khi tải mã sách: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+
+            string query = "SELECT MaSach FROM ViewChiTietNhapKho";
+            DataTable dt = dbConnect.ExecuteQuery(query);
+            cbxMaSach.DataSource = dt;
+            cbxMaSach.DisplayMember = "MaSach";
+            cbxMaSach.ValueMember = "MaSach";
+            cbxMaSach.SelectedIndex = -1;
+
         }
 
         private int GetIdSFromMaSach(string maSach)
@@ -142,18 +135,10 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             }
 
             string maSach = cbxMaSach.SelectedValue?.ToString();
-            if (string.IsNullOrEmpty(maSach))
-            {
-                MessageBox.Show("Mã sách không hợp lệ!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            
 
             int idS = GetIdSFromMaSach(maSach);
-            if (idS == -1)
-            {
-                MessageBox.Show($"Mã sách '{maSach}' không hợp lệ! Phải theo định dạng Sxxx (ví dụ: S001).", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            
 
             if (!int.TryParse(txtSoLuong.Text, out int soLuongThem))
             {
@@ -168,24 +153,57 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                 return;
             }
 
-            // Xử lý lỗi từ SQL
+            // Gọi stored procedure với tham số OUTPUT
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+        new SqlParameter("@IdS", SqlDbType.Int) { Value = idS },
+        new SqlParameter("@SoLuongThem", SqlDbType.Int) { Value = soLuongThem },
+        new SqlParameter("@ResultMessage", SqlDbType.NVarChar, 4000) { Direction = ParameterDirection.Output }
+            };
+
             try
             {
-                dbConnect.ExecuteNonQuery("sp_CapNhatKhoSach", new SqlParameter[]
-                {
-            new SqlParameter("@IdS", idS),
-            new SqlParameter("@SoLuongThem", soLuongThem)
-                }, CommandType.StoredProcedure);
+                dbConnect.ExecuteNonQuery("sp_CapNhatKhoSach", parameters, CommandType.StoredProcedure);
 
-                // Chỉ hiển thị thông báo thành công nếu không có lỗi
-                MessageBox.Show("Cập nhật kho thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                LoadKhoSach();
-                txtSoLuong.Clear();
+                // Lấy thông báo từ tham số OUTPUT
+                string resultMessage = parameters[2].Value?.ToString() ?? "Không nhận được thông báo từ SP";
+
+                // Hiển thị thông báo theo yêu cầu
+                if (resultMessage == "Không có thông tin trong kho")
+                {
+                    MessageBox.Show(resultMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else if (resultMessage.Contains("vượt quá số lượng đã nhập"))
+                {
+                    int startNewQty = resultMessage.IndexOf("vượt quá số lượng đã nhập là ") + "vượt quá số lượng đã nhập là ".Length;
+                    int endNewQty = resultMessage.IndexOf(" so với tổng ");
+                    string newQty = resultMessage.Substring(startNewQty, endNewQty - startNewQty);
+                    MessageBox.Show($"Số lượng thêm vượt quá số lượng đã nhập là {newQty}\nCập nhật thất bại", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else if (resultMessage.Contains("không đủ sách"))
+                {
+                    int startCurrentQty = resultMessage.IndexOf("Số lượng trong kho hiện tại là ") + "Số lượng trong kho hiện tại là ".Length;
+                    int endCurrentQty = resultMessage.IndexOf(" không đủ sách");
+                    int startReduceQty = resultMessage.IndexOf("giảm ") + "giảm ".Length;
+                    string currentQty = resultMessage.Substring(startCurrentQty, endCurrentQty - startCurrentQty);
+                    string reduceQty = resultMessage.Substring(startReduceQty);
+                    MessageBox.Show($"Số lượng trong kho hiện tại là {currentQty} không đủ sách\nCập nhật thất bại", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else if (resultMessage == "Cập nhật thành công")
+                {
+                    MessageBox.Show(resultMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LoadKhoSach();
+                    txtSoLuong.Clear();
+                }
+                else
+                {
+                    MessageBox.Show("Cập nhật thất bại", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning); // Thông báo chung nếu không khớp
+                }
             }
-            catch (SqlException ex)
+            catch (Exception)
             {
-                // Hiển thị thông báo lỗi từ stored procedure
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Bắt mọi lỗi nhưng chỉ hiển thị thông báo chung, không để lộ chi tiết
+                MessageBox.Show("Cập nhật thất bại", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -220,10 +238,14 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                 {
                     string kiemTraKho = dt.Rows[0]["KiemTraKho"].ToString();
                     MessageBox.Show(kiemTraKho, "Thông tin trạng thái kho", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    lastCheckedMaSach = maSach; // Lưu mã sách vừa kiểm tra
+                    hasData = !kiemTraKho.Contains("chưa có dữ liệu nhập kho"); // Cập nhật trạng thái
                 }
                 else
                 {
                     MessageBox.Show($"Mã sách {maSach} không có dữ liệu trạng thái kho!", "Thông tin trạng thái kho", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    lastCheckedMaSach = maSach;
+                    hasData = false;
                 }
             }
             catch (Exception ex)
@@ -249,7 +271,8 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
         {
             txtSoLuong.Clear();
             cbxMaSach.SelectedIndex = -1;
-
+            lastCheckedMaSach = null; // Làm mới trạng thái kiểm tra
+            hasData = true; // Đặt lại trạng thái mặc định
             LoadKhoSach();
         }
 

@@ -74,7 +74,7 @@
             this.btnLogOut.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnLogOut.Image = ((System.Drawing.Image)(resources.GetObject("btnLogOut.Image")));
             this.btnLogOut.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnLogOut.Location = new System.Drawing.Point(0, 559);
+            this.btnLogOut.Location = new System.Drawing.Point(0, 583);
             this.btnLogOut.Name = "btnLogOut";
             this.btnLogOut.Size = new System.Drawing.Size(287, 69);
             this.btnLogOut.TabIndex = 5;
@@ -88,7 +88,7 @@
             this.btnThongKe.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnThongKe.Image = ((System.Drawing.Image)(resources.GetObject("btnThongKe.Image")));
             this.btnThongKe.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnThongKe.Location = new System.Drawing.Point(0, 483);
+            this.btnThongKe.Location = new System.Drawing.Point(0, 507);
             this.btnThongKe.Name = "btnThongKe";
             this.btnThongKe.Size = new System.Drawing.Size(287, 76);
             this.btnThongKe.TabIndex = 7;
@@ -102,7 +102,7 @@
             this.btnTraCuu.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnTraCuu.Image = ((System.Drawing.Image)(resources.GetObject("btnTraCuu.Image")));
             this.btnTraCuu.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnTraCuu.Location = new System.Drawing.Point(0, 417);
+            this.btnTraCuu.Location = new System.Drawing.Point(0, 441);
             this.btnTraCuu.Name = "btnTraCuu";
             this.btnTraCuu.Size = new System.Drawing.Size(287, 66);
             this.btnTraCuu.TabIndex = 3;
@@ -116,7 +116,7 @@
             this.btnNhapSach.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnNhapSach.Image = ((System.Drawing.Image)(resources.GetObject("btnNhapSach.Image")));
             this.btnNhapSach.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnNhapSach.Location = new System.Drawing.Point(0, 345);
+            this.btnNhapSach.Location = new System.Drawing.Point(0, 369);
             this.btnNhapSach.Name = "btnNhapSach";
             this.btnNhapSach.Size = new System.Drawing.Size(287, 72);
             this.btnNhapSach.TabIndex = 2;
@@ -130,7 +130,7 @@
             this.bntKhoSach.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.bntKhoSach.Image = ((System.Drawing.Image)(resources.GetObject("bntKhoSach.Image")));
             this.bntKhoSach.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.bntKhoSach.Location = new System.Drawing.Point(0, 273);
+            this.bntKhoSach.Location = new System.Drawing.Point(0, 297);
             this.bntKhoSach.Name = "bntKhoSach";
             this.bntKhoSach.Size = new System.Drawing.Size(287, 72);
             this.bntKhoSach.TabIndex = 6;
@@ -144,7 +144,7 @@
             this.btnTrangChu.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnTrangChu.Image = ((System.Drawing.Image)(resources.GetObject("btnTrangChu.Image")));
             this.btnTrangChu.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnTrangChu.Location = new System.Drawing.Point(0, 199);
+            this.btnTrangChu.Location = new System.Drawing.Point(0, 223);
             this.btnTrangChu.Name = "btnTrangChu";
             this.btnTrangChu.Size = new System.Drawing.Size(287, 74);
             this.btnTrangChu.TabIndex = 1;
@@ -158,7 +158,7 @@
             this.picHeader.Image = ((System.Drawing.Image)(resources.GetObject("picHeader.Image")));
             this.picHeader.Location = new System.Drawing.Point(0, 0);
             this.picHeader.Name = "picHeader";
-            this.picHeader.Size = new System.Drawing.Size(287, 199);
+            this.picHeader.Size = new System.Drawing.Size(287, 223);
             this.picHeader.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.picHeader.TabIndex = 0;
             this.picHeader.TabStop = false;

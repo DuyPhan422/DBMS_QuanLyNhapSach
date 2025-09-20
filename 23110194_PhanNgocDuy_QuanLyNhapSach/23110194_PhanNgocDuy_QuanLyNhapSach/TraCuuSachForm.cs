@@ -14,15 +14,19 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
     {
         private readonly DBConnect dbConnect;
         private readonly Dictionary<string, (string Query, string SortColumn, Dictionary<string, (string Header, string Format, bool Visible)> Columns)> viewConfig;
+        private DataTable originalDataTable; // Lưu trữ dữ liệu gốc để lọc
+        private DataView dataView; // Lưu trữ DataView để quản lý bộ lọc
         public TraCuuSachForm()
         {
             InitializeComponent();
             dbConnect = new DBConnect();
+            originalDataTable = null;
+            dataView = null;
             // Cấu hình view và cột
             viewConfig = new Dictionary<string, (string Query, string SortColumn, Dictionary<string, (string Header, string Format, bool Visible)> Columns)>
             {
                 {
-                   "Sách",
+                    "Sách",
                     (
                         "SELECT * FROM ViewDanhSachSach ORDER BY MaSach ASC",
                         "MaSach",
@@ -34,10 +38,10 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                             { "TenTheLoai", ("Thể loại", null, true) },
                             { "TenNXB", ("Nhà xuất bản", null, true) },
                             { "NamXuatBan", ("Năm xuất bản", null, true) },
-                            { "SoLuongHienTai", ("Số lượng hiện tại", null, true) },
-                            { "GiaSach", ("Giá sách", "N2", true) },
+                            { "SoLuongHienTai", ("Số lượng hiện tại", "N0", true) },
+                            { "GiaSach", ("Giá sách", "N0", true) }, 
                             { "TrangThaiSach", ("Trạng thái", null, true) },
-                            { "AnhBia", ("Ảnh Bìa", null, false) }
+                            { "AnhBia", ("Ảnh bìa", null, false) }
                         }
                     )
                 },
@@ -48,8 +52,9 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                         "MaTacGia",
                         new Dictionary<string, (string Header, string Format, bool Visible)>
                         {
-                            { "MaTacGia", ("Mã Tác Giả", null, true) },
-                            { "TenTacGia", ("Tên Tác Giả", null, true) }
+                            { "MaTacGia", ("Mã tác giả", null, true) },
+                            { "TenTacGia", ("Tên tác giả", null, true) },
+                            { "SoLuongSach", ("Số lượng sách", "N0", true) } // Sử dụng SoLuongSach từ view
                         }
                     )
                 },
@@ -60,8 +65,9 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                         "MaTheLoai",
                         new Dictionary<string, (string Header, string Format, bool Visible)>
                         {
-                            { "MaTheLoai", ("Mã Thể Loại", null, true) },
-                            { "TenTheLoai", ("Tên Thể Loại", null, true) }
+                            { "MaTheLoai", ("Mã thể loại", null, true) },
+                            { "TenTheLoai", ("Tên thể loại", null, true) },
+                            { "SoLuongSach", ("Số lượng sách", "N0", true) } 
                         }
                     )
                 },
@@ -72,8 +78,9 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                         "MaNXB",
                         new Dictionary<string, (string Header, string Format, bool Visible)>
                         {
-                            { "MaNXB", ("Mã Nhà Xuất Bản", null, true) },
-                            { "TenNXB", ("Tên Nhà Xuất Bản", null, true) }
+                            { "MaNXB", ("Mã nhà xuất bản", null, true) },
+                            { "TenNXB", ("Tên nhà xuất bản", null, true) },
+                            { "SoLuongSach", ("Số lượng sách", "N0", true) } 
                         }
                     )
                 },
@@ -84,27 +91,29 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                         "MaTheNhap",
                         new Dictionary<string, (string Header, string Format, bool Visible)>
                         {
-                            { "MaTheNhap", ("Mã Thẻ Nhập", null, true) },
-                            { "MaNV", ("Mã Nhân Viên", null, true) },
-                            { "MaSach", ("Mã Sách", null, true) },
-                            { "TenNhanVien", ("Tên Nhân Viên", null, true) },
-                            { "TenSach", ("Tên Sách", null, true) },
-                            { "NgayNhap", ("Ngày Nhập", "dd/MM/yyyy", true) },
-                            { "TongSoLuongNhap", ("Tổng Số Lượng Nhập", null, true) },
-                            { "TongTienNhap", ("Tổng Tiền Nhập", "N2", true) },
-                            { "TrangThai", ("Trạng Thái", null, true) }
+                            { "MaTheNhap", ("Mã thẻ nhập", null, true) },
+                            { "MaNV", ("Mã nhân viên", null, true) },
+                            { "MaSach", ("Mã sách", null, true) },
+                            { "TenNhanVien", ("Tên nhân viên", null, true) },
+                            { "TenSach", ("Tên sách", null, true) },
+                            { "NgayNhap", ("Ngày nhập", "dd/MM/yyyy", true) },
+                            { "TongSoLuongNhap", ("Số lượng nhập", "N0", true) },
+                            { "GiaNhap", ("Giá nhập", "N0", true) },
+                            { "TongTienNhap", ("Thành tiền", "N0", true) }, 
+                            { "TrangThai", ("Trạng thái nhập", null, true) }
                         }
                     )
                 }
             };
         }
 
+
         private void TraCuuSachForm_Load(object sender, EventArgs e)
         {
+            
             cbbTraCuu.Items.AddRange(new string[] { "Sách", "Tác giả", "Thể loại", "Nhà xuất bản", "Lịch sử nhập kho" });
-         
-            cbbTraCuu.SelectedIndex = -1; 
-            dgvTraCuu.AutoGenerateColumns = true;
+            cbbTraCuu.SelectedIndex = -1;
+            dgvTraCuu.AutoGenerateColumns = true; // Giữ nguyên AutoGenerateColumns = true
             dgvTraCuu.AllowUserToAddRows = false;
             dgvTraCuu.ReadOnly = true;
             dgvTraCuu.DefaultCellStyle.Font = new Font("Segoe UI", 10);
@@ -119,7 +128,6 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             dgvTraCuu.EnableHeadersVisualStyles = true;
             dgvTraCuu.RowHeadersVisible = false;
 
-            
         }
         private void ConfigureColumns(DataGridView dgv, Dictionary<string, (string Header, string Format, bool Visible)> columnConfig)
         {
@@ -153,17 +161,108 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                     return;
                 }
 
-                DataTable dt = dbConnect.ExecuteQuery(config.Query);
-                dgvTraCuu.DataSource = dt;
+                // Lấy và lưu trữ dữ liệu gốc
+                originalDataTable = dbConnect.ExecuteQuery(config.Query);
+                dataView = new DataView(originalDataTable);
+                dgvTraCuu.DataSource = dataView;
                 ConfigureColumns(dgvTraCuu, config.Columns);
+                txtTimKiem.Text = string.Empty; // Xóa nội dung tìm kiếm khi tra cứu mới
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Đã xảy ra lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-    
+
+        private void txtTimKiem_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (cbbTraCuu.SelectedItem == null || originalDataTable == null || dataView == null)
+                {
+                    return; // Không thực hiện lọc nếu chưa chọn mục tra cứu hoặc chưa có dữ liệu
+                }
+
+                string selectedItem = cbbTraCuu.SelectedItem.ToString();
+                if (!viewConfig.TryGetValue(selectedItem, out var config))
+                {
+                    return;
+                }
+
+                string filterText = txtTimKiem.Text.Trim().Replace("'", "''"); // Thoát ký tự đặc biệt để tránh lỗi SQL injection
+                if (string.IsNullOrEmpty(filterText))
+                {
+                    dataView.RowFilter = string.Empty; // Xóa bộ lọc để hiển thị toàn bộ dữ liệu
+                    dgvTraCuu.DataSource = dataView;
+                    ConfigureColumns(dgvTraCuu, config.Columns);
+                    return;
+                }
+
+                // Tạo bộ lọc cho các cột hiển thị
+                var visibleColumns = config.Columns.Where(c => c.Value.Visible).Select(c => c.Key).ToList();
+                if (!visibleColumns.Any())
+                {
+                    dataView.RowFilter = string.Empty; // Không có cột hiển thị để lọc
+                    dgvTraCuu.DataSource = dataView;
+                    ConfigureColumns(dgvTraCuu, config.Columns);
+                    return;
+                }
+
+                // Tạo biểu thức lọc
+                StringBuilder filterExpression = new StringBuilder();
+                bool hasValidFilter = false;
+                foreach (var column in visibleColumns)
+                {
+                    if (!originalDataTable.Columns.Contains(column)) continue; // Bỏ qua nếu cột không tồn tại
+                    var columnType = originalDataTable.Columns[column].DataType;
+                    string filterCondition = null;
+
+                    if (columnType == typeof(string))
+                    {
+                        filterCondition = $"[{column}] LIKE '%{filterText}%'";
+                    }
+                    else if (columnType == typeof(int) || columnType == typeof(decimal))
+                    {
+                        if (decimal.TryParse(filterText, out decimal number))
+                        {
+                            filterCondition = $"[{column}] = {number}";
+                        }
+                    }
+                    else if (columnType == typeof(DateTime))
+                    {
+                        if (DateTime.TryParseExact(filterText, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime date))
+                        {
+                            filterCondition = $"CONVERT([{column}], 'System.String') LIKE '%{filterText}%'";
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(filterCondition))
+                    {
+                        if (hasValidFilter)
+                        {
+                            filterExpression.Append(" OR ");
+                        }
+                        filterExpression.Append(filterCondition);
+                        hasValidFilter = true;
+                    }
+                }
+
+                // Áp dụng bộ lọc
+                dataView.RowFilter = hasValidFilter ? filterExpression.ToString() : string.Empty;
+                dgvTraCuu.DataSource = dataView;
+                ConfigureColumns(dgvTraCuu, config.Columns);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tìm kiếm: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
     }
 }
+
+
+    
+
     
 
