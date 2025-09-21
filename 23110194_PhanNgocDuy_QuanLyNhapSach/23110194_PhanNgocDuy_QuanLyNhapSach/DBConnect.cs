@@ -81,30 +81,7 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             return dt;
         }
 
-        public DataTable ExecuteQuery(string query, SqlParameter[] parameters, SqlConnection conn, SqlTransaction transaction)
-        {
-            DataTable dt = new DataTable();
-            try
-            {
-                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
-                {
-                    if (parameters != null)
-                    {
-                        cmd.Parameters.AddRange(parameters);
-                    }
-                    using (SqlDataAdapter da = new SqlDataAdapter(cmd))
-                    {
-                        da.Fill(dt);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Lỗi truy vấn trong transaction: " + e.Message);
-                throw; // Ném ngoại lệ để rollback ở cấp cao hơn
-            }
-            return dt;
-        }
+        
 
         public int ExecuteInsertWithIdentity(string query, SqlParameter[] parameters = null)
         {
@@ -132,26 +109,7 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             }
         }
 
-        public int ExecuteInsertWithIdentity(string query, SqlParameter[] parameters, SqlConnection conn, SqlTransaction transaction)
-        {
-            try
-            {
-                using (SqlCommand cmd = new SqlCommand(query + "; SELECT SCOPE_IDENTITY();", conn, transaction))
-                {
-                    if (parameters != null)
-                    {
-                        cmd.Parameters.AddRange(parameters);
-                    }
-                    object result = cmd.ExecuteScalar();
-                    return result != DBNull.Value ? Convert.ToInt32(result) : -1;
-                }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Lỗi khi thêm dữ liệu trong transaction: " + e.Message);
-                throw; // Ném ngoại lệ để rollback ở cấp cao hơn
-            }
-        }
+        
 
         public int ExecuteNonQuery(string query, SqlParameter[] parameters = null, CommandType commandType = CommandType.Text)
         {
@@ -184,30 +142,6 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             }
         }
 
-        public int ExecuteNonQuery(string query, SqlParameter[] parameters, SqlConnection conn, SqlTransaction transaction, CommandType commandType = CommandType.Text)
-        {
-            try
-            {
-                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
-                {
-                    cmd.CommandType = commandType;
-                    if (parameters != null)
-                    {
-                        cmd.Parameters.AddRange(parameters);
-                    }
-                    return cmd.ExecuteNonQuery();
-                }
-            }
-            catch (SqlException ex) when (ex.Number == 229) // Lỗi quyền
-            {
-                MessageBox.Show("Bạn không có quyền thực hiện thao tác này! Vui lòng liên hệ Admin.", "Lỗi quyền", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                throw; // Ném ngoại lệ để rollback
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Lỗi khi thực thi lệnh trong transaction: " + e.Message);
-                throw; // Ném ngoại lệ để rollback
-            }
-        }
+        
     }
 }

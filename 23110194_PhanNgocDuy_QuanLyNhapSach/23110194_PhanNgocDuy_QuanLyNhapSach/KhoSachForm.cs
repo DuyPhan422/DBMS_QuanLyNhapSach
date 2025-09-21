@@ -123,7 +123,78 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             }
             return int.TryParse(maSach.Substring(1), out int idS) ? idS : -1;
         }
+        // Phương thức cập nhật kho sách
+        public bool UpdateKhoSach(int idS, int soLuongThem, out string resultMessage)
+        {
+            resultMessage = "";
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdS", SqlDbType.Int) { Value = idS },
+                new SqlParameter("@SoLuongThem", SqlDbType.Int) { Value = soLuongThem },
+                new SqlParameter("@ResultMessage", SqlDbType.NVarChar, 4000) { Direction = ParameterDirection.Output }
+            };
 
+            try
+            {
+                dbConnect.ExecuteNonQuery("sp_CapNhatKhoSach", parameters, CommandType.StoredProcedure);
+                resultMessage = parameters[2].Value?.ToString() ?? "Cập nhật thất bại";
+                return true;
+            }
+            catch (Exception)
+            {
+                resultMessage = "Cập nhật thất bại";
+                return false;
+            }
+        }
+
+        // Phương thức kiểm tra trạng thái kho sách
+        public bool CheckKhoSach(int idS, out string kiemTraKho)
+        {
+            kiemTraKho = "";
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@p_IdS", SqlDbType.Int) { Value = idS }
+            };
+
+            try
+            {
+                DataTable dt = dbConnect.ExecuteQuery("SELECT dbo.fn_KiemTraTrangThaiKhoSach(@p_IdS) AS KiemTraKho", parameters);
+                if (dt.Rows.Count > 0)
+                {
+                    kiemTraKho = dt.Rows[0]["KiemTraKho"].ToString();
+                    return true;
+                }
+                else
+                {
+                    kiemTraKho = $"Mã sách S{idS:D3} không có dữ liệu trạng thái kho!";
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                kiemTraKho = $"Đã xảy ra lỗi: {ex.Message}";
+                return false;
+            }
+        }
+
+        // Phương thức làm sạch dữ liệu
+        public bool ClearForm()
+        {
+            try
+            {
+                txtSoLuong.Clear();
+                cbxMaSach.SelectedIndex = -1;
+                lastCheckedMaSach = null; // Làm mới trạng thái kiểm tra
+                hasData = true; // Đặt lại trạng thái mặc định
+                LoadKhoSach();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Đã xảy ra lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
 
         private void btnCapNhatKho_Click(object sender, EventArgs e)
         {
@@ -135,10 +206,7 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             }
 
             string maSach = cbxMaSach.SelectedValue?.ToString();
-            
-
             int idS = GetIdSFromMaSach(maSach);
-            
 
             if (!int.TryParse(txtSoLuong.Text, out int soLuongThem))
             {
@@ -153,105 +221,52 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                 return;
             }
 
-            // Gọi stored procedure với tham số OUTPUT
-            SqlParameter[] parameters = new SqlParameter[]
-            {
-        new SqlParameter("@IdS", SqlDbType.Int) { Value = idS },
-        new SqlParameter("@SoLuongThem", SqlDbType.Int) { Value = soLuongThem },
-        new SqlParameter("@ResultMessage", SqlDbType.NVarChar, 4000) { Direction = ParameterDirection.Output }
-            };
+            // Gọi phương thức UpdateKhoSach
+            string resultMessage;
+            bool success = UpdateKhoSach(idS, soLuongThem, out resultMessage);
 
-            try
-            {
-                dbConnect.ExecuteNonQuery("sp_CapNhatKhoSach", parameters, CommandType.StoredProcedure);
+            // Thay \n bằng Environment.NewLine để hiển thị đúng định dạng xuống dòng
+            resultMessage = resultMessage.Replace("\\n", Environment.NewLine);
 
-                // Lấy thông báo từ tham số OUTPUT
-                string resultMessage = parameters[2].Value?.ToString() ?? "Không nhận được thông báo từ SP";
+            // Hiển thị thông báo
+            MessageBox.Show(resultMessage, success ? "Thông báo" : "Cảnh báo", MessageBoxButtons.OK, success ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
 
-                // Hiển thị thông báo theo yêu cầu
-                if (resultMessage == "Không có thông tin trong kho")
-                {
-                    MessageBox.Show(resultMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                else if (resultMessage.Contains("vượt quá số lượng đã nhập"))
-                {
-                    int startNewQty = resultMessage.IndexOf("vượt quá số lượng đã nhập là ") + "vượt quá số lượng đã nhập là ".Length;
-                    int endNewQty = resultMessage.IndexOf(" so với tổng ");
-                    string newQty = resultMessage.Substring(startNewQty, endNewQty - startNewQty);
-                    MessageBox.Show($"Số lượng thêm vượt quá số lượng đã nhập là {newQty}\nCập nhật thất bại", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                else if (resultMessage.Contains("không đủ sách"))
-                {
-                    int startCurrentQty = resultMessage.IndexOf("Số lượng trong kho hiện tại là ") + "Số lượng trong kho hiện tại là ".Length;
-                    int endCurrentQty = resultMessage.IndexOf(" không đủ sách");
-                    int startReduceQty = resultMessage.IndexOf("giảm ") + "giảm ".Length;
-                    string currentQty = resultMessage.Substring(startCurrentQty, endCurrentQty - startCurrentQty);
-                    string reduceQty = resultMessage.Substring(startReduceQty);
-                    MessageBox.Show($"Số lượng trong kho hiện tại là {currentQty} không đủ sách\nCập nhật thất bại", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                else if (resultMessage == "Cập nhật thành công")
-                {
-                    MessageBox.Show(resultMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    LoadKhoSach();
-                    txtSoLuong.Clear();
-                }
-                else
-                {
-                    MessageBox.Show("Cập nhật thất bại", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning); // Thông báo chung nếu không khớp
-                }
-            }
-            catch (Exception)
+            // Cập nhật giao diện nếu thành công
+            if (success && resultMessage == "Cập nhật thành công")
             {
-                // Bắt mọi lỗi nhưng chỉ hiển thị thông báo chung, không để lộ chi tiết
-                MessageBox.Show("Cập nhật thất bại", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                LoadKhoSach();
+                txtSoLuong.Clear();
             }
         }
 
         private void btnKiemTraKho_Click(object sender, EventArgs e)
         {
-            try
+            if (cbxMaSach.SelectedIndex == -1)
             {
-                if (cbxMaSach.SelectedIndex == -1)
-                {
-                    MessageBox.Show("Vui lòng chọn mã sách!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                string maSach = cbxMaSach.SelectedValue?.ToString();
-                if (string.IsNullOrEmpty(maSach))
-                {
-                    MessageBox.Show("Mã sách không hợp lệ!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                int idS = GetIdSFromMaSach(maSach);
-                if (idS == -1)
-                {
-                    MessageBox.Show($"Mã sách '{maSach}' không hợp lệ! Phải theo định dạng Sxxx (ví dụ: S001).", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                DataTable dt = dbConnect.ExecuteQuery("SELECT dbo.fn_KiemTraTrangThaiKhoSach(@p_IdS) AS KiemTraKho",
-                    new SqlParameter[] { new SqlParameter("@p_IdS", idS) });
-
-                if (dt.Rows.Count > 0)
-                {
-                    string kiemTraKho = dt.Rows[0]["KiemTraKho"].ToString();
-                    MessageBox.Show(kiemTraKho, "Thông tin trạng thái kho", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    lastCheckedMaSach = maSach; // Lưu mã sách vừa kiểm tra
-                    hasData = !kiemTraKho.Contains("chưa có dữ liệu nhập kho"); // Cập nhật trạng thái
-                }
-                else
-                {
-                    MessageBox.Show($"Mã sách {maSach} không có dữ liệu trạng thái kho!", "Thông tin trạng thái kho", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    lastCheckedMaSach = maSach;
-                    hasData = false;
-                }
+                MessageBox.Show("Vui lòng chọn mã sách!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
-            catch (Exception ex)
+
+            string maSach = cbxMaSach.SelectedValue?.ToString();
+            if (string.IsNullOrEmpty(maSach))
             {
-                MessageBox.Show($"Đã xảy ra lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Mã sách không hợp lệ!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
+
+            int idS = GetIdSFromMaSach(maSach);
+            if (idS == -1)
+            {
+                MessageBox.Show($"Mã sách '{maSach}' không hợp lệ! Phải theo định dạng Sxxx (ví dụ: S001).", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string kiemTraKho;
+            bool success = CheckKhoSach(idS, out kiemTraKho);
+
+            MessageBox.Show(kiemTraKho, "Thông tin trạng thái kho", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            lastCheckedMaSach = maSach;
+            hasData = !kiemTraKho.Contains("chưa có dữ liệu nhập kho");
         }
         private void txtSoLuong_KeyPress(object sender, KeyPressEventArgs e)
         {

@@ -18,7 +18,7 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
         private bool isAdmin;
         private string currentMaNV;
         private byte[] tempImageData;
-        private Dictionary<string, byte[]> tempImages; // Lưu trữ ảnh tạm thời theo MaTheNhap
+        private Dictionary<string, byte[]> tempImages;
 
         public NhapSachForm(bool isAdmin, string maNV)
         {
@@ -27,7 +27,7 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             this.currentMaNV = maNV;
             db = new DBConnect();
             tempImageData = null;
-            tempImages = new Dictionary<string, byte[]>(); // Khởi tạo Dictionary
+            tempImages = new Dictionary<string, byte[]>();
         }
 
 
@@ -76,7 +76,6 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                 cbbTheLoai.Items.Add(row["TenTheLoai"].ToString());
             }
         }
-
         // Tải dữ liệu từ ViewChiTietTheNhap vào DataGridView
         private void LoadDataGridView()
         {
@@ -85,220 +84,6 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             dgvNhapSach.DataSource = dt;
         }
 
-        private void btnNhapSach_Click(object sender, EventArgs e)
-        {
-            if (dgvNhapSach.SelectedRows.Count > 0)
-            {
-                MessageBox.Show("Vui lòng làm sạch dữ liệu trước khi nhập!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-            if (!ValidateInput()) return;
-            if (!isAdmin && txtMaNhanVien.Text.Trim() != currentMaNV)
-            {
-                MessageBox.Show("Bạn chỉ được phép nhập sách với mã nhân viên của mình!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            SqlParameter[] paramsArr = new SqlParameter[]
-            {
-                new SqlParameter("@MaNV", txtMaNhanVien.Text.Trim()),
-                new SqlParameter("@TenSach", txtTenSach.Text.Trim()),
-                new SqlParameter("@TenTacGia", txtTacGia.Text.Trim()),
-                new SqlParameter("@TenTheLoai", cbbTheLoai.Text.Trim()),
-                new SqlParameter("@TenNXB", txtNhaXuatBan.Text.Trim()),
-                new SqlParameter("@NamXuatBan", int.Parse(txtNamXuatBan.Text)),
-                new SqlParameter("@GiaNhap", decimal.Parse(txtGiaNhap.Text)),
-                new SqlParameter("@SoLuong", int.Parse(txtSoLuong.Text)),
-                new SqlParameter("@NgayNhap", dtpNgayNhap.Value)
-            };
-
-            try
-            {
-                // Thực thi stored procedure sp_NhapSach
-                DataTable result = db.ExecuteQuery(
-                    "EXEC sp_NhapSach @MaNV, @TenSach, @TenTacGia, @TenTheLoai, @TenNXB, @NamXuatBan, @GiaNhap, @SoLuong, @NgayNhap",
-                    paramsArr);
-
-                
-
-                string maSach = result.Rows[0]["MaSach"].ToString();
-                string maTheNhap = result.Rows[0]["MaTheNhap"].ToString();
-
-                // Nếu có ảnh, gọi stored procedure sp_CapNhatAnhBia
-                if (tempImageData != null)
-                {
-                    SqlParameter[] imageParams = new SqlParameter[]
-                    {
-                        new SqlParameter("@MaSach", SqlDbType.VarChar) { Value = maSach },
-                        new SqlParameter("@AnhBia", SqlDbType.VarBinary) { Value = tempImageData }
-                    };
-                    db.ExecuteNonQuery("EXEC sp_CapNhatAnhBia @MaSach, @AnhBia", imageParams);
-                    tempImages[maTheNhap] = tempImageData; // Lưu ảnh vào Dictionary
-                }
-
-                MessageBox.Show("Nhập sách thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                LoadDataGridView();
-                ClearInput();
-            }
-            
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        
-       
-
-        private void btnCapNhat_Click(object sender, EventArgs e)
-        {
-            if (dgvNhapSach.SelectedRows.Count == 0)
-            {
-                MessageBox.Show("Vui lòng chọn một hàng sách để cập nhật!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-            if (!ValidateInput()) return;
-
-            string maTheNhap = dgvNhapSach.SelectedRows[0].Cells["MaTheNhap"].Value.ToString();
-            string trangThai = dgvNhapSach.SelectedRows[0].Cells["TrangThai"].Value?.ToString();
-
-            if (trangThai == "Đã nhập")
-            {
-                MessageBox.Show("Thẻ nhập đã được xác nhận, không thể chỉnh sửa thông tin!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            SqlParameter[] paramsArr = new SqlParameter[]
-            {
-                new SqlParameter("@MaTheNhap", maTheNhap),
-                new SqlParameter("@TenSach", txtTenSach.Text.Trim()),
-                new SqlParameter("@TenTacGia", txtTacGia.Text.Trim()),
-                new SqlParameter("@TenTheLoai", cbbTheLoai.Text.Trim()),
-                new SqlParameter("@TenNXB", txtNhaXuatBan.Text.Trim()),
-                new SqlParameter("@NamXuatBan", int.Parse(txtNamXuatBan.Text)),
-                new SqlParameter("@GiaNhap", decimal.Parse(txtGiaNhap.Text)),
-                new SqlParameter("@SoLuong", int.Parse(txtSoLuong.Text)),
-                new SqlParameter("@NgayNhap", dtpNgayNhap.Value)
-            };
-
-            try
-            {
-                db.ExecuteNonQuery("EXEC sp_CapNhatSach @MaTheNhap, @TenSach, @TenTacGia, @TenTheLoai, @TenNXB, @NamXuatBan, @GiaNhap, @SoLuong, @NgayNhap", paramsArr);
-                MessageBox.Show("Cập nhật thông tin thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                LoadDataGridView();
-                ClearInput();
-            }
-            
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void btnXoaSach_Click(object sender, EventArgs e)
-        {
-            if (dgvNhapSach.SelectedRows.Count == 0)
-            {
-                MessageBox.Show("Vui lòng chọn một hàng sách để xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string maTheNhap = dgvNhapSach.SelectedRows[0].Cells["MaTheNhap"].Value.ToString();
-            string maSach = dgvNhapSach.SelectedRows[0].Cells["MaSach"].Value.ToString();
-            string trangThai = dgvNhapSach.SelectedRows[0].Cells["TrangThai"].Value?.ToString();
-
-            if (trangThai == "Đã nhập")
-            {
-                MessageBox.Show("Hàng sách này đã được nhập vào kho, không thể xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            try
-            {
-                SqlParameter[] paramsArr = new SqlParameter[]
-                {
-            new SqlParameter("@MaTheNhap", maTheNhap),
-            new SqlParameter("@MaSach", maSach)
-                };
-
-                db.ExecuteNonQuery("EXEC sp_XoaSach @MaTheNhap, @MaSach", paramsArr);
-                tempImages.Remove(maTheNhap); // Xóa ảnh tạm thời khỏi Dictionary
-                MessageBox.Show("Xóa sách thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                LoadDataGridView();
-                ClearInput();
-            }
-            
-            
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        // Xử lý tải và cập nhật ảnh bìa
-        
-
-        private void btnUploadAnh_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;";
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                string anhBia = openFileDialog.FileName;
-                tempImageData = File.ReadAllBytes(anhBia);
-                picUploadAnh.Image = Image.FromFile(anhBia);
-                picUploadAnh.SizeMode = PictureBoxSizeMode.StretchImage;
-
-                // Kiểm tra kích thước ảnh
-                if (tempImageData.Length > 1048576) // Giới hạn 1MB
-                {
-                    MessageBox.Show("Kích thước ảnh không được vượt quá 1MB!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    tempImageData = null;
-                    picUploadAnh.Image = null;
-                    return;
-                }
-
-                // Kiểm tra trạng thái thẻ nhập nếu có hàng được chọn
-                if (dgvNhapSach.SelectedRows.Count > 0)
-                {
-                    string trangThai = dgvNhapSach.SelectedRows[0].Cells["TrangThai"].Value?.ToString();
-                    string maTheNhap = dgvNhapSach.SelectedRows[0].Cells["MaTheNhap"].Value?.ToString();
-                    if (trangThai == "Đã nhập")
-                    {
-                        MessageBox.Show("Thẻ nhập đã được xác nhận, không thể cập nhật ảnh!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        tempImageData = null;
-                        picUploadAnh.Image = null;
-                        return;
-                    }
-
-                    // Cập nhật ảnh bìa bằng stored procedure sp_CapNhatAnhBia
-                    string maSach = dgvNhapSach.SelectedRows[0].Cells["MaSach"].Value?.ToString();
-                    SqlParameter[] imageParams = new SqlParameter[]
-                    {
-                        new SqlParameter("@MaSach", SqlDbType.VarChar) { Value = maSach },
-                        new SqlParameter("@AnhBia", SqlDbType.VarBinary) { Value = tempImageData }
-                    };
-
-                    try
-                    {
-                        db.ExecuteNonQuery("EXEC sp_CapNhatAnhBia @MaSach, @AnhBia", imageParams);
-                        tempImages[maTheNhap] = tempImageData; // Lưu ảnh vào Dictionary
-                        MessageBox.Show("Tải ảnh lên thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Lỗi khi cập nhật ảnh: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        tempImageData = null;
-                        picUploadAnh.Image = null;
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Tải ảnh lên thành công! Ảnh sẽ được lưu khi nhập sách.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-        }
-
-        // Kiểm tra đầu vào hợp lệ
         private bool ValidateInput()
         {
             txtMaNhanVien.Text = txtMaNhanVien.Text.Trim();
@@ -358,6 +143,319 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             dgvNhapSach.ClearSelection();
         }
 
+
+
+        // Phương thức thêm sách mới
+        public bool InsertSach(string maNV, string tenSach, string tenTacGia, string tenTheLoai, string tenNXB, int namXuatBan, decimal giaNhap, int soLuong, DateTime ngayNhap, byte[] anhBia)
+        {
+            SqlParameter[] paramsArr = new SqlParameter[]
+            {
+                new SqlParameter("@MaNV", SqlDbType.VarChar) { Value = maNV },
+                new SqlParameter("@TenSach", SqlDbType.NVarChar) { Value = tenSach },
+                new SqlParameter("@TenTacGia", SqlDbType.NVarChar) { Value = tenTacGia },
+                new SqlParameter("@TenTheLoai", SqlDbType.NVarChar) { Value = tenTheLoai },
+                new SqlParameter("@TenNXB", SqlDbType.NVarChar) { Value = tenNXB },
+                new SqlParameter("@NamXuatBan", SqlDbType.Int) { Value = namXuatBan },
+                new SqlParameter("@GiaNhap", SqlDbType.Decimal) { Value = giaNhap },
+                new SqlParameter("@SoLuong", SqlDbType.Int) { Value = soLuong },
+                new SqlParameter("@NgayNhap", SqlDbType.Date) { Value = ngayNhap }
+            };
+
+            try
+            {
+                // Match the original call in btnNhapSach_Click
+                DataTable result = db.ExecuteQuery(
+                    "EXEC sp_NhapSach @MaNV, @TenSach, @TenTacGia, @TenTheLoai, @TenNXB, @NamXuatBan, @GiaNhap, @SoLuong, @NgayNhap",
+                    paramsArr);
+
+                string maSach = result.Rows[0]["MaSach"].ToString();
+                string maTheNhap = result.Rows[0]["MaTheNhap"].ToString();
+
+                if (anhBia != null)
+                {
+                    SqlParameter[] imageParams = new SqlParameter[]
+                    {
+                        new SqlParameter("@MaSach", SqlDbType.VarChar) { Value = maSach },
+                        new SqlParameter("@AnhBia", SqlDbType.VarBinary) { Value = anhBia }
+                    };
+                    db.ExecuteNonQuery("EXEC sp_CapNhatAnhBia @MaSach, @AnhBia", imageParams);
+                    tempImages[maTheNhap] = anhBia;
+                }
+
+                MessageBox.Show("Nhập sách thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        // Phương thức cập nhật sách
+        public bool UpdateSach(string maTheNhap, string tenSach, string tenTacGia, string tenTheLoai, string tenNXB, int namXuatBan, decimal giaNhap, int soLuong, DateTime ngayNhap)
+        {
+            SqlParameter[] paramsArr = new SqlParameter[]
+            {
+                new SqlParameter("@MaTheNhap", SqlDbType.VarChar) { Value = maTheNhap },
+                new SqlParameter("@TenSach", SqlDbType.NVarChar) { Value = tenSach },
+                new SqlParameter("@TenTacGia", SqlDbType.NVarChar) { Value = tenTacGia },
+                new SqlParameter("@TenTheLoai", SqlDbType.NVarChar) { Value = tenTheLoai },
+                new SqlParameter("@TenNXB", SqlDbType.NVarChar) { Value = tenNXB },
+                new SqlParameter("@NamXuatBan", SqlDbType.Int) { Value = namXuatBan },
+                new SqlParameter("@GiaNhap", SqlDbType.Decimal) { Value = giaNhap },
+                new SqlParameter("@SoLuong", SqlDbType.Int) { Value = soLuong },
+                new SqlParameter("@NgayNhap", SqlDbType.Date) { Value = ngayNhap }
+            };
+
+            try
+            {
+                db.ExecuteNonQuery("sp_CapNhatSach", paramsArr, CommandType.StoredProcedure);
+                MessageBox.Show("Cập nhật thông tin thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        // Phương thức xóa sách
+        public bool DeleteSach(string maTheNhap, string maSach)
+        {
+            SqlParameter[] paramsArr = new SqlParameter[]
+            {
+                new SqlParameter("@MaTheNhap", SqlDbType.VarChar) { Value = maTheNhap },
+                new SqlParameter("@MaSach", SqlDbType.VarChar) { Value = maSach }
+            };
+
+            try
+            {
+                db.ExecuteNonQuery("sp_XoaSach", paramsArr, CommandType.StoredProcedure);
+                tempImages.Remove(maTheNhap);
+                MessageBox.Show("Xóa sách thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        // Phương thức xác nhận nhập sách
+        public bool ConfirmNhapSach(string maTheNhap)
+        {
+            SqlParameter[] paramsArr = new SqlParameter[]
+            {
+                new SqlParameter("@MaTheNhap", SqlDbType.VarChar) { Value = maTheNhap }
+            };
+
+            try
+            {
+                db.ExecuteNonQuery("sp_XacNhanNhap", paramsArr, CommandType.StoredProcedure);
+                tempImages.Remove(maTheNhap);
+                MessageBox.Show("Xác nhận nhập thành công! Sách đã được tiếp nhận vào kho.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        // Phương thức cập nhật ảnh bìa
+        public bool UpdateAnhBia(string maSach, byte[] anhBia)
+        {
+            SqlParameter[] imageParams = new SqlParameter[]
+            {
+                new SqlParameter("@MaSach", SqlDbType.VarChar) { Value = maSach },
+                new SqlParameter("@AnhBia", SqlDbType.VarBinary) { Value = anhBia }
+            };
+
+            try
+            {
+                db.ExecuteNonQuery("sp_CapNhatAnhBia", imageParams, CommandType.StoredProcedure);
+                MessageBox.Show("Tải ảnh lên thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi cập nhật ảnh: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+        public bool ClearForm()
+        {
+            try
+            {
+                ClearInput();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        private void btnNhapSach_Click(object sender, EventArgs e)
+        {
+            if (dgvNhapSach.SelectedRows.Count > 0)
+            {
+                MessageBox.Show("Vui lòng làm sạch dữ liệu trước khi nhập!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (!ValidateInput()) return;
+            if (!isAdmin && txtMaNhanVien.Text.Trim() != currentMaNV)
+            {
+                MessageBox.Show("Bạn chỉ được phép nhập sách với mã nhân viên của mình!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            bool success = InsertSach(
+                txtMaNhanVien.Text.Trim(),
+                txtTenSach.Text.Trim(),
+                txtTacGia.Text.Trim(),
+                cbbTheLoai.Text.Trim(),
+                txtNhaXuatBan.Text.Trim(),
+                int.Parse(txtNamXuatBan.Text),
+                decimal.Parse(txtGiaNhap.Text),
+                int.Parse(txtSoLuong.Text),
+                dtpNgayNhap.Value,
+                tempImageData
+            );
+
+            if (success)
+            {
+                LoadDataGridView();
+                ClearInput();
+            }
+        }
+        
+       
+
+        private void btnCapNhat_Click(object sender, EventArgs e)
+        {
+            if (dgvNhapSach.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn một hàng sách để cập nhật!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (!ValidateInput()) return;
+
+            string maTheNhap = dgvNhapSach.SelectedRows[0].Cells["MaTheNhap"].Value.ToString();
+            string trangThai = dgvNhapSach.SelectedRows[0].Cells["TrangThai"].Value?.ToString();
+
+            if (trangThai == "Đã nhập")
+            {
+                MessageBox.Show("Thẻ nhập đã được xác nhận, không thể chỉnh sửa thông tin!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            bool success = UpdateSach(
+                maTheNhap,
+                txtTenSach.Text.Trim(),
+                txtTacGia.Text.Trim(),
+                cbbTheLoai.Text.Trim(),
+                txtNhaXuatBan.Text.Trim(),
+                int.Parse(txtNamXuatBan.Text),
+                decimal.Parse(txtGiaNhap.Text),
+                int.Parse(txtSoLuong.Text),
+                dtpNgayNhap.Value
+            );
+
+            if (success)
+            {
+                LoadDataGridView();
+                ClearInput();
+            }
+        }
+
+        private void btnXoaSach_Click(object sender, EventArgs e)
+        {
+            if (dgvNhapSach.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn một hàng sách để xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string maTheNhap = dgvNhapSach.SelectedRows[0].Cells["MaTheNhap"].Value.ToString();
+            string maSach = dgvNhapSach.SelectedRows[0].Cells["MaSach"].Value.ToString();
+            string trangThai = dgvNhapSach.SelectedRows[0].Cells["TrangThai"].Value?.ToString();
+
+            if (trangThai == "Đã nhập")
+            {
+                MessageBox.Show("Hàng sách này đã được nhập vào kho, không thể xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            bool success = DeleteSach(maTheNhap, maSach);
+            if (success)
+            {
+                LoadDataGridView();
+                ClearInput();
+            }
+        }
+        // Xử lý tải và cập nhật ảnh bìa
+        
+
+        private void btnUploadAnh_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string anhBia = openFileDialog.FileName;
+                tempImageData = File.ReadAllBytes(anhBia);
+                picUploadAnh.Image = Image.FromFile(anhBia);
+                picUploadAnh.SizeMode = PictureBoxSizeMode.StretchImage;
+
+                if (tempImageData.Length > 1048576)
+                {
+                    MessageBox.Show("Kích thước ảnh không được vượt quá 1MB!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    tempImageData = null;
+                    picUploadAnh.Image = null;
+                    return;
+                }
+
+                if (dgvNhapSach.SelectedRows.Count > 0)
+                {
+                    string trangThai = dgvNhapSach.SelectedRows[0].Cells["TrangThai"].Value?.ToString();
+                    string maTheNhap = dgvNhapSach.SelectedRows[0].Cells["MaTheNhap"].Value?.ToString();
+                    string maSach = dgvNhapSach.SelectedRows[0].Cells["MaSach"].Value?.ToString();
+
+                    if (trangThai == "Đã nhập")
+                    {
+                        MessageBox.Show("Thẻ nhập đã được xác nhận, không thể cập nhật ảnh!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        tempImageData = null;
+                        picUploadAnh.Image = null;
+                        return;
+                    }
+
+                    bool success = UpdateAnhBia(maSach, tempImageData);
+                    if (success)
+                    {
+                        tempImages[maTheNhap] = tempImageData;
+                    }
+                    else
+                    {
+                        tempImageData = null;
+                        picUploadAnh.Image = null;
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Tải ảnh lên thành công! Ảnh sẽ được lưu khi nhập sách.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        // Kiểm tra đầu vào hợp lệ
+        
+
         private void btnXacNhanNhap_Click(object sender, EventArgs e)
         {
             if (!isAdmin)
@@ -388,22 +486,10 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                 return;
             }
 
-            SqlParameter[] paramsArr = new SqlParameter[]
+            bool success = ConfirmNhapSach(maTheNhap);
+            if (success)
             {
-                new SqlParameter("@MaTheNhap", maTheNhap)
-            };
-
-            try
-            {
-                db.ExecuteNonQuery("EXEC sp_XacNhanNhap @MaTheNhap", paramsArr);
-                tempImages.Remove(maTheNhap);
-                MessageBox.Show("Xác nhận nhập thành công! Sách đã được tiếp nhận vào kho.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LoadDataGridView();
-            }
-           
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -426,7 +512,6 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                 string maTheNhap = row.Cells["MaTheNhap"].Value?.ToString() ?? "";
                 string trangThai = row.Cells["TrangThai"].Value?.ToString() ?? "";
 
-                // Hiển thị ảnh từ tempImages nếu trạng thái là Chưa nhập
                 if (trangThai == "Chưa nhập" && tempImages.ContainsKey(maTheNhap))
                 {
                     try
@@ -446,7 +531,6 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
                 }
                 else
                 {
-                    // Truy vấn ảnh bìa từ bảng SACH
                     string query = "SELECT AnhBia FROM SACH WHERE MaSach = @MaSach";
                     SqlParameter[] parameters = new SqlParameter[]
                     {
