@@ -247,23 +247,23 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
         // Phương thức xác nhận nhập sách
         public bool ConfirmNhapSach(string maTheNhap)
         {
+            if (!isAdmin)
+            {
+                MessageBox.Show("Bạn không có quyền xác nhận nhập! Vui lòng liên hệ Admin.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
             SqlParameter[] paramsArr = new SqlParameter[]
             {
                 new SqlParameter("@MaTheNhap", SqlDbType.VarChar) { Value = maTheNhap }
             };
 
-            try
-            {
+        
                 db.ExecuteNonQuery("sp_XacNhanNhap", paramsArr, CommandType.StoredProcedure);
                 tempImages.Remove(maTheNhap);
                 MessageBox.Show("Xác nhận nhập thành công! Sách đã được tiếp nhận vào kho.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
+            
         }
 
         // Phương thức cập nhật ảnh bìa
@@ -458,12 +458,6 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
 
         private void btnXacNhanNhap_Click(object sender, EventArgs e)
         {
-            if (!isAdmin)
-            {
-                MessageBox.Show("Bạn không có quyền xác nhận nhập! Vui lòng liên hệ Admin.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             if (dgvNhapSach.SelectedRows.Count == 0)
             {
                 MessageBox.Show("Vui lòng chọn một hàng sách để xác nhận!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -491,6 +485,7 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             {
                 LoadDataGridView();
             }
+        
         }
 
         private void dgvNhapSach_CellClick(object sender, DataGridViewCellEventArgs e)

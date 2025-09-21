@@ -587,77 +587,98 @@ END;
 GO
 
 
-CREATE PROCEDURE sp_CapNhatKhoSach  
+CREATE OR ALTER PROCEDURE sp_CapNhatKhoSach  
     @IdS INT,  
     @SoLuongThem INT,  
     @ResultMessage NVARCHAR(4000) OUTPUT  
 AS  
 BEGIN  
     SET NOCOUNT ON;  
-    DECLARE @SoLuongHienTai INT;  
-    DECLARE @TongSoLuongNhap INT;  
-    DECLARE @HasNhapKho BIT;  
-    DECLARE @SoLuongMoi INT;  
+    BEGIN TRY
+        DECLARE @SoLuongHienTai INT;  
+        DECLARE @TongSoLuongNhap INT;  
+        DECLARE @HasNhapKho BIT;  
+        DECLARE @SoLuongMoi INT;  
 
-    -- Kiểm tra mã sách tồn tại  
-    IF NOT EXISTS (SELECT 1 FROM SACH WHERE IdS = @IdS)  
-    BEGIN  
-        SET @ResultMessage = N'Không có thông tin trong kho';  
-        RETURN 1;  
-    END;  
+        BEGIN TRANSACTION;
 
-    -- Kiểm tra thông tin nhập kho (chấp nhận nếu có ít nhất một bản ghi 'DaNhap')  
-    SET @HasNhapKho = (SELECT COUNT(*) FROM The_Nhap WHERE IdS = @IdS AND TrangThai = 'DaNhap');  
-    IF @HasNhapKho = 0  
-    BEGIN  
-        SET @ResultMessage = N'Không có thông tin trong kho';  
-        RETURN 1;  
-    END;  
+        -- Kiểm tra mã sách tồn tại  
+        IF NOT EXISTS (SELECT 1 FROM SACH WHERE IdS = @IdS)  
+        BEGIN  
+            SET @ResultMessage = N'Không có thông tin trong kho';  
+            ROLLBACK TRANSACTION;
+            RETURN 1;  
+        END;  
 
-    -- Lấy số lượng hiện tại  
-    SELECT @SoLuongHienTai = ISNULL(SoLuongHienTai, 0)  
-    FROM Kho_Sach  
-    WHERE MaSach = @IdS;  
+        -- Kiểm tra thông tin nhập kho (chấp nhận nếu có ít nhất một bản ghi 'DaNhap')  
+        SET @HasNhapKho = (SELECT COUNT(*) FROM The_Nhap WHERE IdS = @IdS AND TrangThai = 'DaNhap');  
+        IF @HasNhapKho = 0  
+        BEGIN  
+            SET @ResultMessage = N'Không có thông tin trong kho';  
+            ROLLBACK TRANSACTION;
+            RETURN 1;  
+        END;  
 
-    -- Tính số lượng mới  
-    SET @SoLuongMoi = @SoLuongHienTai + @SoLuongThem;  
-
-    -- Kiểm tra giảm số lượng xuống nhỏ hơn 0  
-    IF @SoLuongMoi < 0  
-    BEGIN  
-        SET @ResultMessage = N'Số lượng trong kho hiện tại là ' + CAST(@SoLuongHienTai AS NVARCHAR(10)) + N' không đủ sách để giảm ' + CAST(ABS(@SoLuongThem) AS NVARCHAR(10)) + N'\nCập nhật thất bại';  
-        RETURN 1;  
-    END;  
-
-    -- Lấy tổng số lượng đã nhập  
-    SELECT @TongSoLuongNhap = ISNULL(SUM(TongSoLuongNhap), 0)  
-    FROM The_Nhap  
-    WHERE IdS = @IdS AND TrangThai = 'DaNhap';  
-
-    -- Kiểm tra vượt quá tổng số lượng đã nhập  
-    IF @SoLuongMoi > @TongSoLuongNhap  
-    BEGIN  
-        SET @ResultMessage = N'Số lượng thêm vượt quá số lượng đã nhập là ' + CAST(@TongSoLuongNhap AS NVARCHAR(10)) + N'\nCập nhật thất bại';  
-        RETURN 1;  
-    END;  
-
-    -- Thực hiện cập nhật  
-    IF EXISTS (SELECT 1 FROM Kho_Sach WHERE MaSach = @IdS)  
-    BEGIN  
-        UPDATE Kho_Sach  
-        SET SoLuongHienTai = @SoLuongMoi,  
-            TrangThaiSach = CASE WHEN @SoLuongMoi > 0 THEN N'ConSach' ELSE N'HetSach' END  
+        -- Lấy số lượng hiện tại  
+        SELECT @SoLuongHienTai = ISNULL(SoLuongHienTai, 0)  
+        FROM Kho_Sach  
         WHERE MaSach = @IdS;  
-    END  
-    ELSE IF @SoLuongThem > 0  
-    BEGIN  
-        INSERT INTO Kho_Sach (MaSach, SoLuongHienTai, TrangThaiSach)  
-        VALUES (@IdS, @SoLuongThem, N'ConSach');  
-    END;  
 
-    SET @ResultMessage = N'Cập nhật thành công';  
-    RETURN 0;  
+        -- Tính số lượng mới  
+        SET @SoLuongMoi = @SoLuongHienTai + @SoLuongThem;  
+
+        -- Kiểm tra giảm số lượng xuống nhỏ hơn 0  
+        IF @SoLuongMoi < 0  
+        BEGIN  
+            SET @ResultMessage = N'Số lượng trong kho hiện tại là ' + CAST(@SoLuongHienTai AS NVARCHAR(10)) + N' không đủ sách để giảm ' + CAST(ABS(@SoLuongThem) AS NVARCHAR(10)) + N'\nCập nhật thất bại';  
+            ROLLBACK TRANSACTION;
+            RETURN 1;  
+        END;  
+
+        -- Lấy tổng số lượng đã nhập  
+        SELECT @TongSoLuongNhap = ISNULL(SUM(TongSoLuongNhap), 0)  
+        FROM The_Nhap  
+        WHERE IdS = @IdS AND TrangThai = 'DaNhap';  
+
+        -- Kiểm tra vượt quá tổng số lượng đã nhập  
+        IF @SoLuongMoi > @TongSoLuongNhap  
+        BEGIN  
+            SET @ResultMessage = N'Số lượng thêm vượt quá số lượng đã nhập là ' + CAST(@TongSoLuongNhap AS NVARCHAR(10)) + N'\nCập nhật thất bại';  
+            ROLLBACK TRANSACTION;
+            RETURN 1;  
+        END;  
+
+        -- Thực hiện cập nhật  
+        IF EXISTS (SELECT 1 FROM Kho_Sach WHERE MaSach = @IdS)  
+        BEGIN  
+            UPDATE Kho_Sach  
+            SET SoLuongHienTai = @SoLuongMoi,  
+                TrangThaiSach = CASE WHEN @SoLuongMoi > 0 THEN N'ConSach' ELSE N'HetSach' END  
+            WHERE MaSach = @IdS;  
+        END  
+        ELSE IF @SoLuongThem > 0  
+        BEGIN  
+            INSERT INTO Kho_Sach (MaSach, SoLuongHienTai, TrangThaiSach)  
+            VALUES (@IdS, @SoLuongThem, N'ConSach');  
+        END;  
+
+        SET @ResultMessage = N'Cập nhật thành công';  
+        COMMIT TRANSACTION;
+        RETURN 0;  
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+        SET @ResultMessage = @ErrorMessage;
+        RETURN 1;
+    END CATCH;
 END;
+GO
+
 
 
 
@@ -902,46 +923,13 @@ GO
 
 
 
--- Kiểm tra và bỏ qua lỗi nếu vai trò đã tồn tại (sử dụng IF NOT EXISTS nếu SQL Server hỗ trợ, nhưng tốt nhất là chỉ cấp quyền)
-IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'AdminRole')
-    CREATE ROLE AdminRole;
-IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'NhanVienRole')
-    CREATE ROLE NhanVienRole;
+CREATE ROLE AdminRole;
+CREATE ROLE NhanVienRole;
+ALTER ROLE NhanVienRole ADD MEMBER AdminRole;
 GO
 
--- Gán quyền cho AdminRole (toàn quyền)
-GRANT SELECT, INSERT, UPDATE, DELETE ON TaiKhoan TO AdminRole;
-GRANT SELECT, INSERT, UPDATE, DELETE ON [Admin] TO AdminRole;
-GRANT SELECT, INSERT, UPDATE, DELETE ON NhanVien TO AdminRole;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TAC_GIA TO AdminRole;
-GRANT SELECT, INSERT, UPDATE, DELETE ON THE_LOAI TO AdminRole;
-GRANT SELECT, INSERT, UPDATE, DELETE ON NHA_XUAT_BAN TO AdminRole;
-GRANT SELECT, INSERT, UPDATE, DELETE ON SACH TO AdminRole;
-GRANT SELECT, INSERT, UPDATE, DELETE ON The_Nhap TO AdminRole;
-GRANT SELECT, INSERT, UPDATE, DELETE ON Kho_Sach TO AdminRole;
-
-GRANT EXECUTE ON sp_CapNhatKhoSach TO AdminRole;
-GRANT EXECUTE ON sp_NhapSach TO AdminRole;
-GRANT EXECUTE ON sp_CapNhatSach TO AdminRole;
-GRANT EXECUTE ON sp_XacNhanNhap TO AdminRole;
-GRANT EXECUTE ON sp_CapNhatAnhBia TO AdminRole;
-GRANT EXECUTE ON sp_ThongKeSachDaNhap TO AdminRole;
-GRANT EXECUTE ON sp_ThongKeNhapSachTheoNgay TO AdminRole;
-
-GRANT EXECUTE ON fn_KiemTraTrangThaiKhoSach TO AdminRole;
-
-GRANT SELECT ON ViewDanhSachSach TO AdminRole;
-GRANT SELECT ON ViewDanhSachTheLoai TO AdminRole;
-GRANT SELECT ON ViewDanhSachTacGia TO AdminRole;
-GRANT SELECT ON ViewDanhSachNhaXuatBan TO AdminRole;
-GRANT SELECT ON ViewLichSuNhapKho TO AdminRole;
-GRANT SELECT ON ViewChiTietNhapKho TO AdminRole;
-GRANT SELECT ON ViewChiTietTheNhap TO AdminRole;
-GO
-
--- Gán quyền cho NhanVienRole (giới hạn không dùng stored procedure)
+-- Gán quyền cho NhanVienRole (quyền cơ bản trên từng bảng)
 GRANT SELECT, INSERT, UPDATE, DELETE ON TaiKhoan TO NhanVienRole;
-GRANT SELECT ON [Admin] TO NhanVienRole;
 GRANT SELECT, INSERT, UPDATE, DELETE ON NhanVien TO NhanVienRole;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TAC_GIA TO NhanVienRole;
 GRANT SELECT, INSERT, UPDATE, DELETE ON THE_LOAI TO NhanVienRole;
@@ -949,17 +937,23 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON NHA_XUAT_BAN TO NhanVienRole;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SACH TO NhanVienRole;
 GRANT SELECT, INSERT, UPDATE, DELETE ON The_Nhap TO NhanVienRole;
 GRANT SELECT, INSERT, UPDATE, DELETE ON Kho_Sach TO NhanVienRole;
+GRANT SELECT ON [Admin] TO NhanVienRole;
 
+-- Gán quyền thực thi stored procedure cho NhanVienRole
 GRANT EXECUTE ON sp_NhapSach TO NhanVienRole;
 GRANT EXECUTE ON sp_CapNhatSach TO NhanVienRole;
-DENY EXECUTE ON sp_XacNhanNhap TO NhanVienRole; 
 GRANT EXECUTE ON sp_CapNhatKhoSach TO NhanVienRole;
 GRANT EXECUTE ON sp_CapNhatAnhBia TO NhanVienRole;
 GRANT EXECUTE ON sp_ThongKeSachDaNhap TO NhanVienRole;
 GRANT EXECUTE ON sp_ThongKeNhapSachTheoNgay TO NhanVienRole;
 
+-- Từ chối quyền thực thi sp_XacNhanNhap cho NhanVienRole
+DENY EXECUTE ON sp_XacNhanNhap TO NhanVienRole;
+
+-- Gán quyền thực thi hàm cho NhanVienRole
 GRANT EXECUTE ON fn_KiemTraTrangThaiKhoSach TO NhanVienRole;
 
+-- Gán quyền xem view cho NhanVienRole
 GRANT SELECT ON ViewDanhSachSach TO NhanVienRole;
 GRANT SELECT ON ViewDanhSachTheLoai TO NhanVienRole;
 GRANT SELECT ON ViewDanhSachTacGia TO NhanVienRole;
@@ -967,4 +961,9 @@ GRANT SELECT ON ViewDanhSachNhaXuatBan TO NhanVienRole;
 GRANT SELECT ON ViewLichSuNhapKho TO NhanVienRole;
 GRANT SELECT ON ViewChiTietNhapKho TO NhanVienRole;
 GRANT SELECT ON ViewChiTietTheNhap TO NhanVienRole;
+GO
+
+-- Gán quyền bổ sung cho AdminRole (chỉ quyền không kế thừa từ NhanVienRole)
+GRANT SELECT, INSERT, UPDATE, DELETE ON [Admin] TO AdminRole;
+GRANT EXECUTE ON sp_XacNhanNhap TO AdminRole;
 GO

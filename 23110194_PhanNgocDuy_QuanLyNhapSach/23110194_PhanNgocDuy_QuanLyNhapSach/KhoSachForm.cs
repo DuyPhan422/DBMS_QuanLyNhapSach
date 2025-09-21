@@ -180,20 +180,18 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
         // Phương thức làm sạch dữ liệu
         public bool ClearForm()
         {
-            try
-            {
-                txtSoLuong.Clear();
-                cbxMaSach.SelectedIndex = -1;
-                lastCheckedMaSach = null; // Làm mới trạng thái kiểm tra
-                hasData = true; // Đặt lại trạng thái mặc định
-                LoadKhoSach();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Đã xảy ra lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
+
+            txtSoLuong.Clear();
+            txtTenSach.Clear();
+            txtSoLuongHienTai.Clear();
+            cbxMaSach.SelectedIndex = -1;
+            lastCheckedMaSach = null; // Làm mới trạng thái kiểm tra
+            hasData = true; // Đặt lại trạng thái mặc định
+            
+            dgvKhoSach.ClearSelection(); // Bỏ chọn tất cả hàng trong DataGridView
+            return true;
+
+
         }
 
         private void btnCapNhatKho_Click(object sender, EventArgs e)
@@ -234,7 +232,7 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             // Cập nhật giao diện nếu thành công
             if (success && resultMessage == "Cập nhật thành công")
             {
-                LoadKhoSach();
+                txtSoLuongHienTai.Text = (int.Parse(txtSoLuongHienTai.Text) + soLuongThem).ToString();
                 txtSoLuong.Clear();
             }
         }
@@ -284,13 +282,78 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
 
         private void picClean_Click(object sender, EventArgs e)
         {
-            txtSoLuong.Clear();
-            cbxMaSach.SelectedIndex = -1;
-            lastCheckedMaSach = null; // Làm mới trạng thái kiểm tra
-            hasData = true; // Đặt lại trạng thái mặc định
-            LoadKhoSach();
+            bool success = ClearForm();
+            if (success)
+            {
+                MessageBox.Show("Đã làm sạch dữ liệu!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
-        
+        private void cbxMaSach_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Nếu chưa chọn mã sách, xóa các TextBox và thoát
+            if (cbxMaSach.SelectedIndex == -1 || cbxMaSach.SelectedValue == null)
+            {
+                txtTenSach.Clear();
+                txtSoLuongHienTai.Clear();
+                return;
+            }
+
+            string maSach = cbxMaSach.SelectedValue.ToString();
+            if (string.IsNullOrEmpty(maSach))
+            {
+                txtTenSach.Clear();
+                txtSoLuongHienTai.Clear();
+                return;
+            }
+
+            string query = "SELECT TenSach, SoLuong AS SoLuongHienTai FROM ViewChiTietNhapKho WHERE MaSach = @MaSach";
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@MaSach", SqlDbType.VarChar) { Value = maSach }
+            };
+
+            try
+            {
+                DataTable dt = dbConnect.ExecuteQuery(query, parameters);
+                if (dt.Rows.Count > 0)
+                {
+                    txtTenSach.Text = dt.Rows[0]["TenSach"].ToString();
+                    txtSoLuongHienTai.Text = dt.Rows[0]["SoLuongHienTai"].ToString();
+                }
+                else
+                {
+                    txtTenSach.Clear();
+                    txtSoLuongHienTai.Clear();
+                    // Không hiển thị thông báo để tránh làm phiền người dùng
+                }
+            }
+            catch (Exception ex)
+            {
+                txtTenSach.Clear();
+                txtSoLuongHienTai.Clear();
+                // Chỉ hiển thị lỗi nghiêm trọng
+                MessageBox.Show($"Đã xảy ra lỗi khi truy vấn dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void dgvKhoSach_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dgvKhoSach.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dgvKhoSach.SelectedRows[0];
+                string maSach = selectedRow.Cells["MaSach"].Value?.ToString();
+                string tenSach = selectedRow.Cells["TenSach"].Value?.ToString();
+                string soLuongHienTai = selectedRow.Cells["SoLuong"].Value?.ToString();
+
+                // Cập nhật các control
+                if (!string.IsNullOrEmpty(maSach))
+                {
+                    cbxMaSach.SelectedValue = maSach;
+                }
+                txtTenSach.Text = tenSach ?? "";
+                txtSoLuongHienTai.Text = soLuongHienTai ?? "";
+            }
+        }
     }
 }

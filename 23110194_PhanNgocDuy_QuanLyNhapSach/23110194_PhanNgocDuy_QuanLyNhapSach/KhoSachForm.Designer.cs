@@ -32,6 +32,7 @@
             this.dgvKhoSach = new System.Windows.Forms.DataGridView();
             this.label11 = new System.Windows.Forms.Label();
             this.grThongTinKho = new Guna.UI2.WinForms.Guna2GroupBox();
+            this.lbTenSach = new System.Windows.Forms.Label();
             this.picClean = new Guna.UI2.WinForms.Guna2PictureBox();
             this.lbMaSach = new System.Windows.Forms.Label();
             this.cbxMaSach = new System.Windows.Forms.ComboBox();
@@ -40,6 +41,9 @@
             this.txtSoLuong = new System.Windows.Forms.TextBox();
             this.btnKiemTraKho = new System.Windows.Forms.Button();
             this.lbBangNhapSach = new System.Windows.Forms.Label();
+            this.txtTenSach = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.txtSoLuongHienTai = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dgvKhoSach)).BeginInit();
             this.grThongTinKho.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picClean)).BeginInit();
@@ -60,6 +64,7 @@
             this.dgvKhoSach.RowTemplate.Height = 24;
             this.dgvKhoSach.Size = new System.Drawing.Size(1575, 277);
             this.dgvKhoSach.TabIndex = 0;
+            this.dgvKhoSach.SelectionChanged += new System.EventHandler(this.dgvKhoSach_SelectionChanged);
             // 
             // label11
             // 
@@ -76,6 +81,10 @@
             // 
             // grThongTinKho
             // 
+            this.grThongTinKho.Controls.Add(this.txtSoLuongHienTai);
+            this.grThongTinKho.Controls.Add(this.label1);
+            this.grThongTinKho.Controls.Add(this.txtTenSach);
+            this.grThongTinKho.Controls.Add(this.lbTenSach);
             this.grThongTinKho.Controls.Add(this.picClean);
             this.grThongTinKho.Controls.Add(this.lbMaSach);
             this.grThongTinKho.Controls.Add(this.cbxMaSach);
@@ -88,15 +97,28 @@
             this.grThongTinKho.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(125)))), ((int)(((byte)(137)))), ((int)(((byte)(149)))));
             this.grThongTinKho.Location = new System.Drawing.Point(46, 104);
             this.grThongTinKho.Name = "grThongTinKho";
-            this.grThongTinKho.Size = new System.Drawing.Size(713, 305);
+            this.grThongTinKho.Size = new System.Drawing.Size(622, 341);
             this.grThongTinKho.TabIndex = 79;
             this.grThongTinKho.Text = "Thông tin kho";
+            // 
+            // lbTenSach
+            // 
+            this.lbTenSach.AutoSize = true;
+            this.lbTenSach.BackColor = System.Drawing.Color.Transparent;
+            this.lbTenSach.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbTenSach.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.lbTenSach.Location = new System.Drawing.Point(17, 96);
+            this.lbTenSach.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbTenSach.Name = "lbTenSach";
+            this.lbTenSach.Size = new System.Drawing.Size(101, 26);
+            this.lbTenSach.TabIndex = 87;
+            this.lbTenSach.Text = "Tên sách:";
             // 
             // picClean
             // 
             this.picClean.Image = ((System.Drawing.Image)(resources.GetObject("picClean.Image")));
             this.picClean.ImageRotate = 0F;
-            this.picClean.Location = new System.Drawing.Point(668, 0);
+            this.picClean.Location = new System.Drawing.Point(577, 0);
             this.picClean.Name = "picClean";
             this.picClean.Size = new System.Drawing.Size(45, 39);
             this.picClean.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -110,7 +132,7 @@
             this.lbMaSach.BackColor = System.Drawing.Color.Transparent;
             this.lbMaSach.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbMaSach.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.lbMaSach.Location = new System.Drawing.Point(17, 66);
+            this.lbMaSach.Location = new System.Drawing.Point(17, 54);
             this.lbMaSach.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbMaSach.Name = "lbMaSach";
             this.lbMaSach.Size = new System.Drawing.Size(94, 26);
@@ -121,10 +143,11 @@
             // 
             this.cbxMaSach.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbxMaSach.FormattingEnabled = true;
-            this.cbxMaSach.Location = new System.Drawing.Point(263, 63);
+            this.cbxMaSach.Location = new System.Drawing.Point(246, 46);
             this.cbxMaSach.Name = "cbxMaSach";
-            this.cbxMaSach.Size = new System.Drawing.Size(194, 34);
+            this.cbxMaSach.Size = new System.Drawing.Size(238, 34);
             this.cbxMaSach.TabIndex = 69;
+            this.cbxMaSach.SelectedIndexChanged += new System.EventHandler(this.cbxMaSach_SelectedIndexChanged);
             // 
             // lbSoLuongMoi
             // 
@@ -132,7 +155,7 @@
             this.lbSoLuongMoi.BackColor = System.Drawing.Color.Transparent;
             this.lbSoLuongMoi.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbSoLuongMoi.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.lbSoLuongMoi.Location = new System.Drawing.Point(17, 131);
+            this.lbSoLuongMoi.Location = new System.Drawing.Point(17, 189);
             this.lbSoLuongMoi.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbSoLuongMoi.Name = "lbSoLuongMoi";
             this.lbSoLuongMoi.Size = new System.Drawing.Size(196, 26);
@@ -143,7 +166,7 @@
             // 
             this.btnCapNhatKho.Image = ((System.Drawing.Image)(resources.GetObject("btnCapNhatKho.Image")));
             this.btnCapNhatKho.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnCapNhatKho.Location = new System.Drawing.Point(369, 202);
+            this.btnCapNhatKho.Location = new System.Drawing.Point(318, 255);
             this.btnCapNhatKho.Name = "btnCapNhatKho";
             this.btnCapNhatKho.Size = new System.Drawing.Size(219, 62);
             this.btnCapNhatKho.TabIndex = 5;
@@ -154,9 +177,9 @@
             // 
             // txtSoLuong
             // 
-            this.txtSoLuong.Location = new System.Drawing.Point(263, 131);
+            this.txtSoLuong.Location = new System.Drawing.Point(246, 189);
             this.txtSoLuong.Name = "txtSoLuong";
-            this.txtSoLuong.Size = new System.Drawing.Size(194, 34);
+            this.txtSoLuong.Size = new System.Drawing.Size(238, 34);
             this.txtSoLuong.TabIndex = 4;
             this.txtSoLuong.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSoLuong_KeyPress);
             // 
@@ -164,7 +187,7 @@
             // 
             this.btnKiemTraKho.Image = ((System.Drawing.Image)(resources.GetObject("btnKiemTraKho.Image")));
             this.btnKiemTraKho.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnKiemTraKho.Location = new System.Drawing.Point(83, 202);
+            this.btnKiemTraKho.Location = new System.Drawing.Point(33, 255);
             this.btnKiemTraKho.Name = "btnKiemTraKho";
             this.btnKiemTraKho.Size = new System.Drawing.Size(217, 62);
             this.btnKiemTraKho.TabIndex = 6;
@@ -179,12 +202,41 @@
             this.lbBangNhapSach.BackColor = System.Drawing.Color.Transparent;
             this.lbBangNhapSach.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbBangNhapSach.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.lbBangNhapSach.Location = new System.Drawing.Point(41, 429);
+            this.lbBangNhapSach.Location = new System.Drawing.Point(41, 448);
             this.lbBangNhapSach.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbBangNhapSach.Name = "lbBangNhapSach";
             this.lbBangNhapSach.Size = new System.Drawing.Size(154, 26);
             this.lbBangNhapSach.TabIndex = 80;
             this.lbBangNhapSach.Text = "Bảng kho sách:";
+            // 
+            // txtTenSach
+            // 
+            this.txtTenSach.Location = new System.Drawing.Point(246, 96);
+            this.txtTenSach.Name = "txtTenSach";
+            this.txtTenSach.ReadOnly = true;
+            this.txtTenSach.Size = new System.Drawing.Size(238, 34);
+            this.txtTenSach.TabIndex = 88;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.BackColor = System.Drawing.Color.Transparent;
+            this.label1.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.label1.Location = new System.Drawing.Point(17, 142);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(176, 26);
+            this.label1.TabIndex = 89;
+            this.label1.Text = "Số lượng hiện tại:";
+            // 
+            // txtSoLuongHienTai
+            // 
+            this.txtSoLuongHienTai.Location = new System.Drawing.Point(246, 142);
+            this.txtSoLuongHienTai.Name = "txtSoLuongHienTai";
+            this.txtSoLuongHienTai.ReadOnly = true;
+            this.txtSoLuongHienTai.Size = new System.Drawing.Size(238, 34);
+            this.txtSoLuongHienTai.TabIndex = 90;
             // 
             // KhoSachForm
             // 
@@ -220,5 +272,9 @@
         private System.Windows.Forms.Button btnKiemTraKho;
         private Guna.UI2.WinForms.Guna2PictureBox picClean;
         private System.Windows.Forms.Label lbBangNhapSach;
+        private System.Windows.Forms.Label lbTenSach;
+        private System.Windows.Forms.TextBox txtTenSach;
+        private System.Windows.Forms.TextBox txtSoLuongHienTai;
+        private System.Windows.Forms.Label label1;
     }
 }
