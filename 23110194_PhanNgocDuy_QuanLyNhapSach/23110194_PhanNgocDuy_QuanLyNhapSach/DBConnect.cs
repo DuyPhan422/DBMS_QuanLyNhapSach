@@ -11,7 +11,7 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
 
         public DBConnect()
         {
-            string strCon = @"Data Source=localhost;Initial Catalog=NhapSach;Persist Security Info=True;User ID=sa;Password=40938813dD#;Encrypt=True;TrustServerCertificate=True";
+            string strCon = @"Data Source=localhost;Initial Catalog=QuanLyNhapSach;Persist Security Info=True;User ID=sa;Password=40938813dD#;Encrypt=True;TrustServerCertificate=True";
             stringConnect = new SqlConnection(strCon);
         }
 

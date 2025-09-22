@@ -142,9 +142,6 @@ namespace _23110194_PhanNgocDuy_QuanLyNhapSach
             tempImageData = null;
             dgvNhapSach.ClearSelection();
         }
-
-
-
         // Phương thức thêm sách mới
         public bool InsertSach(string maNV, string tenSach, string tenTacGia, string tenTheLoai, string tenNXB, int namXuatBan, decimal giaNhap, int soLuong, DateTime ngayNhap, byte[] anhBia)
         {
